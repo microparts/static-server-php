@@ -1,0 +1,29 @@
+{
+  "name": "microparts/configuration-php",
+  "description": "A configuration module for PHP microservices.",
+  "type": "library",
+  "license": "GPL-3.0-only",
+  "authors": [
+    {
+      "name": "Roquie",
+      "email": "roquie0@gmail.com"
+    },
+    {
+      "name": "Shatilo Reymond",
+      "email": "shatilo.reymond@gmail.com"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Microparts\\Configuration\\": "src"
+    }
+  },
+  "require": {
+    "symfony/yaml": "^4.1",
+    "psr/log": "^1.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^7.4.3",
+    "symfony/var-dumper": "^4.1"
+  }
+}

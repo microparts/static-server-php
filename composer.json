@@ -1,0 +1,31 @@
+{
+  "name": "microparts/static-server-php",
+  "type": "project",
+  "authors": [
+    {
+      "name": "roquie",
+      "email": "roquie0@gmail.com"
+    }
+  ],
+  "require": {
+    "microparts/configuration-php": "^2.0",
+    "monolog/monolog": "^1.24",
+    "masterminds/html5": "^2.5"
+  },
+  "require-dev": {
+    "roave/security-advisories": "dev-master",
+    "eaglewu/swoole-ide-helper": "dev-master",
+    "symfony/var-dumper": "^4.1",
+    "phpunit/phpunit": "^7.4"
+  },
+  "autoload": {
+    "psr-4": {
+      "StaticServer\\": "src"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "StaticServer\\Tests\\": "tests"
+    }
+  }
+}

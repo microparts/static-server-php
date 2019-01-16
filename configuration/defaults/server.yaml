@@ -1,0 +1,27 @@
+defaults:
+  server:
+    host: 0.0.0.0
+    port: 8080
+    root: /app
+    index: index.html
+    swoole:
+      log_level: 3 # warning level, 0 debug
+      http_compression: true
+      http_gzip_level: 6
+    log_info:
+      security: "%cDo you have a security note for this site? Please write a letter to us: %csecurity@teamc.io"
+      job: "%cJob offer or partnership: %cwork@teamc.io"
+    mimes:
+      xml: application/xml
+      json: application/json
+      txt: text/plain
+      html: text/html
+      md: text/plain
+      css: text/css
+      js: text/javascript
+      png: image/png
+      gif: image/gif
+      jpg: image/jpg
+      jpeg: image/jpg
+      ico: image/x-icon
+      mp4: video/mp4
