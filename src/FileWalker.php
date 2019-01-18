@@ -8,11 +8,9 @@
 
 namespace StaticServer;
 
-use Generator;
 use Psr\Log\LoggerInterface;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
-use SplQueue;
 use StaticServer\Handler\HandlerInterface;
 use StaticServer\Handler\LoadContentHandler;
 
@@ -26,7 +24,7 @@ final class FileWalker
     /**
      * @var array
      */
-    private $handler;
+    private $handlers;
 
     /**
      * FileWalker constructor.
@@ -44,7 +42,15 @@ final class FileWalker
      */
     public function addHandler(HandlerInterface $handler): void
     {
-        $this->handler[] = $handler;
+        $this->handlers[] = $handler;
+    }
+
+    /**
+     * @return array
+     */
+    public function getHandlers()
+    {
+        return $this->handlers;
     }
 
     /**
@@ -55,8 +61,6 @@ final class FileWalker
      */
     public function walk(string $path = __DIR__ . '/dist'): iterable
     {
-//        $this->addHandler(new SaveChangesHandler());
-
         $directory = new RecursiveDirectoryIterator($path);
         $iterator = new RecursiveIteratorIterator($directory);
 
@@ -71,7 +75,7 @@ final class FileWalker
 
             $this->logger->debug('Processing file: ' . $item->getRealPath());
 
-            yield array_reduce($this->handler, function ($carry, HandlerInterface $handler) use ($item) {
+            yield array_reduce($this->handlers, function ($carry, HandlerInterface $handler) use ($item) {
                 return $handler($carry, $item);
             });
         }

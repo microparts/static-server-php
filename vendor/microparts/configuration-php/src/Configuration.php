@@ -316,7 +316,7 @@ class Configuration implements ConfigurationInterface, ArrayAccess, LoggerAwareI
                     continue;
                 }
 
-                if (is_array($value) || is_array($base[$key])) {
+                if (is_array($value) || (isset($base[$key]) && is_array($base[$key]))) {
                     $base[$key] = $this->arrayMergeRecursiveDistinct($base[$key], $append[$key]);
                 } else {
                     if (is_numeric($key)) {

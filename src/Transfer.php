@@ -31,11 +31,6 @@ final class Transfer
     private $content = '';
 
     /**
-     * @var mixed
-     */
-    private $data;
-
-    /**
      * Transfer constructor.
      *
      * @param string $filename
@@ -84,14 +79,6 @@ final class Transfer
     }
 
     /**
-     * @param mixed $data
-     */
-    public function setData($data): void
-    {
-        $this->data = $data;
-    }
-
-    /**
      * @return string
      */
     public function getFilename(): string
@@ -121,13 +108,5 @@ final class Transfer
     public function getRealpath(): string
     {
         return $this->realpath;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getData()
-    {
-        return $this->data;
     }
 }

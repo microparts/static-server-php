@@ -11,7 +11,6 @@ namespace StaticServer;
 use Microparts\Configuration\ConfigurationInterface;
 use Psr\Log\LoggerInterface;
 use StaticServer\Middleware\MiddlewareInterface;
-use StaticServer\Middleware\QueueMiddlewareInterface;
 use Swoole\Http\Request;
 use Swoole\Http\Response;
 use Swoole\Http\Server;
@@ -51,14 +50,9 @@ final class HttpApplication
     private $walker;
 
     /**
-     * @var QueueMiddlewareInterface|MiddlewareInterface[]
+     * @var MiddlewareInterface[]
      */
     private $middleware;
-
-    /**
-     * @var \SplQueue[]
-     */
-    private $queue;
 
     /**
      * HttpApplication constructor.
@@ -70,9 +64,9 @@ final class HttpApplication
     public function __construct(ConfigurationInterface $conf, LoggerInterface $logger, FileWalker $walker)
     {
         $this->handler = $this->createServer($conf);
-        $this->conf = $conf;
-        $this->logger = $logger;
-        $this->walker = $walker;
+        $this->conf    = $conf;
+        $this->logger  = $logger;
+        $this->walker  = $walker;
     }
 
     /**

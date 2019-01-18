@@ -12,7 +12,7 @@ use Microparts\Configuration\ConfigurationInterface;
 use Swoole\Http\Request;
 use Swoole\Http\Response;
 
-class ContentSecurityPolicyMiddleware implements MiddlewareInterface
+final class ContentSecurityPolicyMiddleware implements MiddlewareInterface
 {
     /**
      * @var \Microparts\Configuration\ConfigurationInterface
