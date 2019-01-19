@@ -5,8 +5,8 @@ jobs:
     steps:
       - run:
           name: Build image
-          command: make image IMAGE=unit FILE=Dockerfile.test
+          command: docker build -f Dockerfile.test -t unit:latest .
       - run:
           name: Run tests
-          command: make run IMAGE=unit
+          command: docker run --rm -it unit:latest
 
