@@ -12,7 +12,8 @@
     "ext-dom": "*",
     "microparts/configuration-php": "2.*",
     "monolog/monolog": "^1.24",
-    "masterminds/html5": "^2.5"
+    "masterminds/html5": "^2.5",
+    "symfony/console": "^4.2"
   },
   "require-dev": {
     "roave/security-advisories": "dev-master",

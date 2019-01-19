@@ -1,0 +1,24 @@
+#!/usr/bin/env php
+<?php
+
+use StaticServer\Console\DumpConfigCommand;
+use StaticServer\Console\RunServerCommand;
+use Symfony\Component\Console\Application;
+
+$locations = [
+    __DIR__ . '/../../../autoload.php',
+    __DIR__ . '/../vendor/autoload.php',
+    __DIR__ . '/vendor/autoload.php'
+];
+
+foreach ($locations as $file) {
+    if (file_exists($file)) {
+        require_once $file;
+        break;
+    }
+}
+
+$app = new Application('Static server', '1.0.0');
+$app->add(new RunServerCommand());
+$app->add(new DumpConfigCommand());
+$app->run();

@@ -1,4 +1,5 @@
 <?php declare(strict_types=1);
+
 /**
  * Created by Roquie.
  * E-mail: roquie0@gmail.com
@@ -6,31 +7,14 @@
  * Date: 2019-01-15
  */
 
-use Microparts\Configuration\Configuration;
-use Psr\Log\LogLevel;
-use StaticServer\Handler\InjectConfigToIndexHandler;
-use StaticServer\HttpApplication;
-use StaticServer\Middleware\ContentSecurityPolicyMiddleware;
-use StaticServer\PrettyLogger;
-use StaticServer\FileWalker;
+use StaticServer\SimpleInit;
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-$path  = getenv('CONFIG_PATH') ?: './configuration';
-$stage = getenv('STAGE') ?: 'local';
-$sha1  = getenv('VCS_SHA1') ?: '';
-$level = getenv('LOG_LEVEL') ?: LogLevel::INFO;
+// Server read the following environment variables:
+// CONFIG_PATH – server and frontend configuration.
+// STAGE – server and frontend mode to start: prod/dev/local
+// VCS_SHA1 – build commit sha1 for debug
+// LOG_LEVEL – level of logging. Important! For swoole server, log_level needs to be set up in the `server.yaml` configuration file.
 
-$logger = PrettyLogger::create($level);
-$conf = new Configuration($path, $stage);
-$conf->setLogger($logger);
-$conf->load();
-
-$walker = new FileWalker($logger);
-$walker->addHandler(new InjectConfigToIndexHandler($conf, $stage, $sha1));
-
-$http = new HttpApplication($conf, $logger, $walker);
-$http->use(new ContentSecurityPolicyMiddleware($conf));
-
-$http->run();
-
+SimpleInit::new()->run();
