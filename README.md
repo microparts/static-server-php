@@ -144,10 +144,12 @@ Root directory contains following files from scratch:
 ```
 .
 ├── favicon.ico
+├── index.html
 └── robots.txt
 ```
 
 * `favicon.ico` – is a transparent `.ico` file (for prevent error logs).
+* `index.html` – simple index file with hello message.
 * `robots.txt` – the file which blocks all robots by default.
 
 Each file can be replaced.
