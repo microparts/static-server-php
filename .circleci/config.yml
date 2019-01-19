@@ -10,4 +10,14 @@ jobs:
       - run:
           name: Run tests
           command: docker run --rm -it unit:latest
+      - run:
+          name: Create docker image for static server
+          command: docker build -t microparts/static-server-php:latest .
+      - run:
+          name: Login to Docker Hub and push image
+          command: |
+            echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+            docker push microparts/static-server-php:latest
+            docker tag microparts/static-server-php:latest microparts/static-server-php:$CIRCLE_TAG
+            docker push microparts/static-server-php:$CIRCLE_TAG
 
