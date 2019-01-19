@@ -73,6 +73,10 @@ final class FileWalker
                 continue;
             }
 
+            if (substr($item->getFilename(), 0, 1) === '.') {
+                continue;
+            }
+
             $this->logger->debug('Processing file: ' . $item->getRealPath());
 
             yield array_reduce($this->handlers, function ($carry, HandlerInterface $handler) use ($item) {
