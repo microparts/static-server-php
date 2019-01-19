@@ -109,7 +109,7 @@ final class HttpApplication
         $server = new Server(
             $conf->get('server.host'),
             $conf->get('server.port'),
-            SWOOLE_BASE
+            SWOOLE_PROCESS
         );
 
         $server->set($conf->get('server.swoole'));

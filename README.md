@@ -3,10 +3,21 @@ Static server
 
 [![CircleCI](https://circleci.com/gh/microparts/static-server-php/tree/master.svg?style=svg)](https://circleci.com/gh/microparts/static-server-php/tree/master)
 
-Special static server with support corporate standard of configuration and more. <br>
-**It has the similar performance compare with the Nginx static files server.**
+Special static server with support corporate standard of configuration and more.
+It has the similar performance compare with the Nginx static files server.
 
 Server created for javascript SPA apps like: Vue, React, Angular, etc.
+
+## Features
+
+* Incredibly fast. Server hits more than [182k request per second](./benchmark).
+* Special created for modern web app's.
+* Secure headers by default.
+* Frontend developer can be configure CSP header himself.
+* If backend app will be hacked, the hacker may write a letter to us, because email address injected to head section of index :)
+* Corporate config standard supported by default and injected too.
+* Brotli-compression by default.
+* Deny all `robots.txt` by default.
 
 ## Docker usage
 
