@@ -1,6 +1,8 @@
 Static server
 -------------
 
+[![CircleCI](https://circleci.com/gh/microparts/static-server-php/tree/master.svg?style=svg)](https://circleci.com/gh/microparts/static-server-php/tree/master)
+
 Special static server with support corporate standard of configuration and more. <br>
 **It has the similar performance compare with the Nginx static files server.**
 

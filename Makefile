@@ -1,8 +1,9 @@
 IMAGE = microparts/static-server-php
 VERSION = latest
+FILE = Dockerfile
 
 image:
-	docker build -t $(IMAGE):$(VERSION) .
+	docker build -f $(FILE) -t $(IMAGE):$(VERSION) .
 
 push:
 	docker push $(IMAGE):$(VERSION)
