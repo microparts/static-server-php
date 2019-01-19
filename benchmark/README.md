@@ -6,7 +6,6 @@ Testing environment
 * 8 vCPU
 * 32 GB RAM
 * Ubuntu 18.04
-* Running from Docker-ce 18.09.0~3-0~ubuntu-bionic
 * Swoole version 4.2.12
 
 Hetzner CX51 Virtual Machine from Cloud.
