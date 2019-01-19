@@ -14,7 +14,7 @@ Server created for javascript SPA apps like: Vue, React, Angular, etc.
 * Special created for modern web app's.
 * Secure headers by default.
 * Frontend developer can be configure CSP header himself.
-* If backend app will be hacked, the hacker may write a letter to us, because email address injected to head section of index :)
+* If backend app will be hacked, the hacker may write a letter to us, because email address injected to head section of index (console message) :)
 * Corporate config standard supported by default and injected too.
 * Brotli-compression by default.
 * Deny all `robots.txt` by default.
