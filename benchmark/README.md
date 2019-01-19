@@ -10,15 +10,7 @@ Testing environment
 
 Hetzner CX51 Virtual Machine from Cloud.
 
-Pre-installed software:
-```bash
-apt-get update && apt-get upgrade
-apt install php7.2-cli
-apt install php-pear
-pecl install swoole # and enable it in php.ini
-```
-
-Then install composer to install server depends. That all.
+For look the pre-installed software see file `deps.sh`.
 
 Command to run app:
 
