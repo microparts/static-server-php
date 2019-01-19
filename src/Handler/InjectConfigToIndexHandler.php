@@ -8,6 +8,7 @@
 
 namespace StaticServer\Handler;
 
+use DOMElement;
 use Masterminds\HTML5;
 use Microparts\Configuration\ConfigurationInterface;
 use SplFileInfo;
@@ -62,9 +63,30 @@ final class InjectConfigToIndexHandler implements HandlerInterface
         }
 
         $dom = $this->html5->loadHTML($carry->getContent());
+
         $script = $dom->createElement('script', $this->javascript());
-        $meta = $dom->getElementsByTagName('meta');
-        $meta->item(0)->appendChild($script);
+        $head = $dom->getElementsByTagName('head');
+
+        // ignore injecting if <head> tag not found in the html file.
+        if ($head->length < 1) {
+            return $carry;
+        }
+
+        $first = null;
+        foreach ($head->item(0)->childNodes as $node) {
+            if ($node instanceof DOMElement) {
+                $first = $node;
+                break;
+            }
+        }
+
+        // if <head> contains child tags we will be inserted script before the first tag.
+        if ($first !== null) {
+            $first->parentNode->insertBefore($script, $first);
+        } else {
+            // otherwise <head> tag is empty
+            $head->item(0)->appendChild($script);
+        }
 
         $carry->setContent(
             $this->html5->saveHTML($dom)

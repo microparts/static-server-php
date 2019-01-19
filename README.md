@@ -22,14 +22,17 @@ ARG VCS_SHA1
 configuration with VCS SHA1 to `<head>` section. Like this:
 
 ```html
-<html lang="en"><head>
-  <meta charset="utf-8"><script>    window.__stage = 'local';
-    window.__config = JSON.parse('{"content_security_policy":[]}');
-    window.__vcs = '55b5293';
+<html lang="en">
+  <head>
+    <script>
+      window.__stage = 'local';
+      window.__config = JSON.parse('{"content_security_policy":[]}');
+      window.__vcs = '55b5293';
 
-    console.log('%cDo you have a security note for this site? Please write a letter to us: %csecurity@teamc.io', 'color: #009688', 'color: #F44336');
-    console.log('%cJob offer or partnership: %cwork@teamc.io', 'color: #009688', 'color: #F44336');</script>
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      console.log('%cDo you have a security note for this site? Please write a letter to us: %csecurity@teamc.io', 'color: #009688', 'color: #F44336');
+      console.log('%cJob offer or partnership: %cwork@teamc.io', 'color: #009688', 'color: #F44336');
+    </script>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <!-- ... -->
 ```
 3. Load all content of static files to memory
@@ -50,6 +53,14 @@ x-content-type: nosniff
 Also, available `Content Security Policy` header,
 but developer should be written values to config manually.
 
+## Tests
+
+Install packages for development using composer and just run following command:
+
+```
+vendor/bin/phpunit
+```
+
 ## License
 
-GPL v3
+GNU GPL v3

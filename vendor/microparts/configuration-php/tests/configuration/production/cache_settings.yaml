@@ -1,3 +1,0 @@
-production:
-  cache:
-    timeout: 1m

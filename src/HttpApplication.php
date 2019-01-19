@@ -79,6 +79,16 @@ final class HttpApplication
     }
 
     /**
+     * Dry run without start of server.
+     */
+    public function dryRun()
+    {
+        $this->doLoadInTheMemory();
+        $this->registerOnStartListener();
+        $this->registerOnRequestListener();
+    }
+
+    /**
      * Run server.
      */
     public function run()
@@ -139,10 +149,12 @@ final class HttpApplication
                 $middleware->process($request, $response);
             }
 
+            // if passed URI is file from fs, return it.
             if (isset(self::$files[$uri])) {
                 $response->header('Content-Type', self::$headers[$uri] . '; charset=utf-8');
                 $response->end(self::$files[$uri]);
             } else {
+                // otherwise to forward the request to index file to handle it within javascript router.
                 $response->header('Content-Type', self::$headers['/'] . '; charset=utf-8');
                 $response->end(self::$files['/']);
             }

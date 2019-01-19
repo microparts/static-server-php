@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7fc8da7d52de01152025a50048eba549",
+    "content-hash": "11dd054a5c5c88d892514c60bae2b758",
     "packages": [
         {
             "name": "masterminds/html5",
@@ -75,25 +75,28 @@
         },
         {
             "name": "microparts/configuration-php",
-            "version": "2.0.3",
+            "version": "2.0.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/microparts/configuration-php.git",
-                "reference": "5fd15ffbf6d3773b195b1a0605b694a033db1b7e"
+                "reference": "10f2f30208278bbaa271684dc1328b325e598c23"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/microparts/configuration-php/zipball/5fd15ffbf6d3773b195b1a0605b694a033db1b7e",
-                "reference": "5fd15ffbf6d3773b195b1a0605b694a033db1b7e",
+                "url": "https://api.github.com/repos/microparts/configuration-php/zipball/10f2f30208278bbaa271684dc1328b325e598c23",
+                "reference": "10f2f30208278bbaa271684dc1328b325e598c23",
                 "shasum": ""
             },
             "require": {
                 "psr/log": "^1.0",
-                "symfony/yaml": "^4.1"
+                "symfony/yaml": "^4.2"
             },
             "require-dev": {
                 "phpunit/phpunit": "^7.4.3",
                 "symfony/var-dumper": "^4.1"
+            },
+            "suggest": {
+                "ext-yaml": "For fast yaml parsing."
             },
             "type": "library",
             "autoload": {
@@ -107,7 +110,7 @@
             ],
             "authors": [
                 {
-                    "name": "roquie",
+                    "name": "Roquie",
                     "email": "roquie0@gmail.com"
                 },
                 {
@@ -116,7 +119,7 @@
                 }
             ],
             "description": "A configuration module for PHP microservices.",
-            "time": "2018-11-20T20:21:58+00:00"
+            "time": "2019-01-19T11:58:13+00:00"
         },
         {
             "name": "monolog/monolog",
@@ -422,12 +425,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/wudi/swoole-ide-helper.git",
-                "reference": "51672c1ea0c1a029b07f19113b2d84182647af8d"
+                "reference": "b8356ee96d6c3b5a7db02927b75a534ed548c95c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/wudi/swoole-ide-helper/zipball/51672c1ea0c1a029b07f19113b2d84182647af8d",
-                "reference": "51672c1ea0c1a029b07f19113b2d84182647af8d",
+                "url": "https://api.github.com/repos/wudi/swoole-ide-helper/zipball/b8356ee96d6c3b5a7db02927b75a534ed548c95c",
+                "reference": "b8356ee96d6c3b5a7db02927b75a534ed548c95c",
                 "shasum": ""
             },
             "type": "library",
@@ -454,7 +457,7 @@
                 "sublime",
                 "swoole"
             ],
-            "time": "2018-12-16T07:18:40+00:00"
+            "time": "2019-01-19T10:53:07+00:00"
         },
         {
             "name": "myclabs/deep-copy",
@@ -2214,6 +2217,9 @@
     },
     "prefer-stable": false,
     "prefer-lowest": false,
-    "platform": [],
+    "platform": {
+        "ext-json": "*",
+        "ext-dom": "*"
+    },
     "platform-dev": []
 }
