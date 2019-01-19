@@ -11,12 +11,15 @@ Server created for javascript SPA apps like: Vue, React, Angular, etc.
 ## Docker usage
 
 ```Dockerfile
-FROM microparts/static-server-php:latest
+FROM microparts/static-server-php:1.0.0
 
 COPY dist/ /app
+COPY ./configuration /app/configuration
 
 ARG VCS_SHA1
 ```
+
+Full example can be founded [here](./example).
 
 ## CLI usage
 
@@ -133,6 +136,21 @@ STAGE – server and frontend mode to start: prod/dev/local
 VCS_SHA1 – build commit sha1 for debug
 LOG_LEVEL – level of logging. Important! For swoole server, log_level needs to be set up in the `server.yaml` configuration file.
 ```
+
+## Default files in the root directory
+
+By default root directory is `/app`. It special for container-based usage. <br>
+Root directory contains following files from scratch:
+```
+.
+├── favicon.ico
+└── robots.txt
+```
+
+* `favicon.ico` – is a transparent `.ico` file (for prevent error logs).
+* `robots.txt` – the file which blocks all robots by default.
+
+Each file can be replaced.
 
 ## Tests
 
