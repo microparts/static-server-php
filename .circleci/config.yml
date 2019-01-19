@@ -3,6 +3,7 @@ jobs:
   build:
     machine: true
     steps:
+      - checkout
       - run:
           name: Build image
           command: docker build -f Dockerfile.test -t unit:latest .
