@@ -145,6 +145,8 @@ final class HttpApplication
             $response->header('x-frame-options', 'SAMEORIGIN');
             $response->header('x-content-type', 'nosniff');
             $response->header('X-Content-Type-Options', 'nosniff');
+            $response->header('Referrer-Policy', 'no-referrer');
+            $response->header('Feature-Policy', "geolocation 'none'; payment 'none'; microphone 'none'; camera 'none'; autoplay 'none'");
 
             $response->header('content-security-policy', "default-src 'self' 'unsafe-inline' 'unsafe-eval' https: data:; object-src 'none'");
             $response->header('strict-transport-security', 'max-age=31536000; includeSubDomains; preload');
