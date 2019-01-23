@@ -144,6 +144,7 @@ final class HttpApplication
             $response->header('x-xss-protection', '1; mode=block');
             $response->header('x-frame-options', 'SAMEORIGIN');
             $response->header('x-content-type', 'nosniff');
+            $response->header('X-Content-Type-Options', 'nosniff');
 
             $response->header('content-security-policy', "default-src 'self' 'unsafe-inline' 'unsafe-eval' https: data:; object-src 'none'");
             $response->header('strict-transport-security', 'max-age=31536000; includeSubDomains; preload');
