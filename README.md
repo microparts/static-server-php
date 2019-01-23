@@ -13,7 +13,6 @@ Server created for javascript SPA apps like: Vue, React, Angular, etc.
 * Incredibly fast. Server hits more than [182k request per second](./benchmark).
 * Special created for modern web app's.
 * Secure headers by default.
-* Frontend developer can be configure CSP header himself.
 * If backend app will be hacked, the hacker may write a letter to us, because email address injected to head section of index (console message) :)
 * Corporate config standard supported by default and injected too.
 * Brotli-compression by default.
@@ -70,7 +69,6 @@ server:
   swoole:
     log_level: 3
     http_compression: true
-    http_gzip_level: 6
   log_info:
     security: '%cDo you have a security note for this site? Please write a letter to us: %csecurity@teamc.io'
     job: '%cJob offer or partnership: %cwork@teamc.io'
@@ -102,7 +100,7 @@ configuration with VCS SHA1 to `<head>` section. Like this:
   <head>
     <script>
       window.__stage = 'local';
-      window.__config = JSON.parse('{"content_security_policy":[]}');
+      window.__config = JSON.parse('{}');
       window.__vcs = '55b5293';
 
       console.log('%cDo you have a security note for this site? Please write a letter to us: %csecurity@teamc.io', 'color: #009688', 'color: #F44336');
@@ -126,8 +124,8 @@ x-frame-options: SAMEORIGIN
 x-content-type: nosniff
 ```
 
-Also, available `Content Security Policy` header,
-but developer should be written values to config manually.
+Frontend developer should manually add `Content Security Policy` protection,
+use HTML meta tag. [Read more](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy#Examples).
 
 ## Compression
 

@@ -146,7 +146,7 @@ final class SimpleInit
         ));
 
         $http = new HttpApplication($this->conf, $this->logger, $walker);
-        $http->use(new ContentSecurityPolicyMiddleware($this->conf));
+//        $http->use(new ContentSecurityPolicyMiddleware($this->conf));
 
         $http->run();
     }
