@@ -129,17 +129,22 @@ configuration with VCS SHA1 to `<head>` section. Like this:
 ```html
 <html lang="en">
   <head>
-    <script>
-      window.__stage = 'local';
-      window.__config = JSON.parse('{}');
-      window.__vcs = '55b5293';
-
-      console.log('%cDo you have a security note for this site? Please write a letter to us: %csecurity@teamc.io', 'color: #009688', 'color: #F44336');
-      console.log('%cJob offer or partnership: %cwork@teamc.io', 'color: #009688', 'color: #F44336');
-    </script>
+    <script src="/__config.js"></script>
     <meta charset="utf-8">
 <!-- ... -->
 ```
+
+Config has following content:
+
+```js
+window.__stage = 'local';
+window.__config = JSON.parse('{}');
+window.__vcs = '55b5293';
+
+console.log('%cDo you have a security note for this site? Please write a letter to us: %csecurity@teamc.io', 'color: #009688', 'color: #F44336');
+console.log('%cJob offer or partnership: %cwork@teamc.io', 'color: #009688', 'color: #F44336');
+```
+
 3. Load all content of static files to memory
 4. Start server.
 
