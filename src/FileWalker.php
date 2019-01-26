@@ -11,6 +11,7 @@ namespace StaticServer;
 use Psr\Log\LoggerInterface;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+use SplFileInfo;
 use StaticServer\Handler\HandlerInterface;
 use StaticServer\Handler\LoadContentHandler;
 
@@ -24,7 +25,12 @@ final class FileWalker
     /**
      * @var array
      */
-    private $handlers;
+    private $handlers = [];
+
+    /**
+     * @var SplFileInfo[]
+     */
+    private $ghosts = [];
 
     /**
      * FileWalker constructor.
@@ -43,6 +49,14 @@ final class FileWalker
     public function addHandler(HandlerInterface $handler): void
     {
         $this->handlers[] = $handler;
+    }
+
+    /**
+     * @param string $path
+     */
+    public function addGhostFile(string $path): void
+    {
+        $this->ghosts[] = new SplFileInfo($path);
     }
 
     /**
@@ -81,6 +95,12 @@ final class FileWalker
 
             yield array_reduce($this->handlers, function ($carry, HandlerInterface $handler) use ($item) {
                 return $handler($carry, $item);
+            });
+        }
+
+        foreach ($this->ghosts as $ghost) {
+            yield array_reduce($this->handlers, function ($carry, HandlerInterface $handler) use ($ghost) {
+                return $handler($carry, $ghost);
             });
         }
     }

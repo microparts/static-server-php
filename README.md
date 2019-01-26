@@ -27,6 +27,9 @@ COPY dist/ /app
 COPY ./configuration /app/configuration
 
 ARG VCS_SHA1
+ARG STAGE
+ENV STAGE $STAGE
+ENV VCS_SHA1 $VCS_SHA1
 ```
 
 Full example can be founded [here](./example).
@@ -72,22 +75,50 @@ server:
   log_info:
     security: '%cDo you have a security note for this site? Please write a letter to us: %csecurity@teamc.io'
     job: '%cJob offer or partnership: %cwork@teamc.io'
+  headers:
+    csp:
+      - 'default-src ''self'''
+      - 'script-src ''self'' cdnjs.cloudflare.com'
+      - 'img-src ''self'' data:'
+      - 'style-src ''self'' ''unsafe-inline'' fonts.googleapis.com cdnjs.cloudflare.com'
+      - 'font-src ''self'' data: fonts.gstatic.com cdnjs.cloudflare.com'
+      - 'form-action ''self'''
+    feature_policy:
+      - 'geolocation ''none'''
+      - 'payment ''none'''
+      - 'microphone ''none'''
+      - 'camera ''none'''
+      - 'autoplay ''none'''
+    referer_policy: no-referrer
   mimes:
     map: application/json
     xml: application/xml
     json: application/json
     txt: text/plain
     html: text/html
+    htm: text/html
     md: text/plain
     css: text/css
     js: text/javascript
+    mjs: text/javascript
     png: image/png
     gif: image/gif
     jpg: image/jpg
     jpeg: image/jpg
+    svg: image/svg+xml
+    webp: image/webp
+    bmp: image/bmp
     ico: image/x-icon
-    mp4: video/mp4
-content_security_policy: {  }
+    tif: image/tiff
+    tiff: image/tiff
+    ts: application/typescript
+    otf: application/x-font-opentype
+    ttf: font/ttf
+    woff: font/woff
+    woff2: font/woff2
+    eot: application/vnd.ms-fontobject
+    sfnt: application/font-sfnt
+    csv: text/csv
 ```
 
 ## How it works?
@@ -106,7 +137,7 @@ configuration with VCS SHA1 to `<head>` section. Like this:
       console.log('%cDo you have a security note for this site? Please write a letter to us: %csecurity@teamc.io', 'color: #009688', 'color: #F44336');
       console.log('%cJob offer or partnership: %cwork@teamc.io', 'color: #009688', 'color: #F44336');
     </script>
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta charset="utf-8">
 <!-- ... -->
 ```
 3. Load all content of static files to memory
@@ -122,9 +153,15 @@ Cache-Control: "public, must-revalidate, proxy-revalidate"
 x-xss-protection: 1; mode=block
 x-frame-options: SAMEORIGIN
 x-content-type: nosniff
+X-Content-Type-Options: nosniff
+X-Ua-Compatible: IE=edge
+Referrer-Policy: no-referrer
+Feature-Policy: geolocation 'none';payment 'none';microphone 'none';camera 'none';autoplay 'none'
+Content-Security-Policy: default-src 'self';script-src 'self' cdnjs.cloudflare.com;img-src 'self' data:;style-src 'self' 'unsafe-inline' fonts.googleapis.com cdnjs.cloudflare.com;font-src 'self' data: fonts.gstatic.com cdnjs.cloudflare.com;form-action 'self'
+Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
 ```
 
-Frontend developer should manually add `Content Security Policy` protection,
+Also, frontend developer can be manually add `Content Security Policy` protection,
 use HTML meta tag. [Read more](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy#Examples).
 
 ## Compression

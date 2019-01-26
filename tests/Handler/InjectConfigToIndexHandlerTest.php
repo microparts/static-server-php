@@ -11,7 +11,7 @@ namespace StaticServer\Tests\Handler;
 use Microparts\Configuration\Configuration;
 use Microparts\Configuration\ConfigurationInterface;
 use SplFileInfo;
-use StaticServer\Handler\InjectConfigToIndexHandler;
+use StaticServer\Handler\InjectConfigFileToIndexHandler;
 use StaticServer\Tests\TestCase;
 use StaticServer\Transfer;
 
@@ -20,7 +20,7 @@ class InjectConfigToIndexHandlerTest extends TestCase
     public function testHowInjectingSkipFilesExceptIndex()
     {
         $conf = $this->createMock(ConfigurationInterface::class);
-        $handler = new InjectConfigToIndexHandler($conf, 'local', 'sha1_of_code');
+        $handler = new InjectConfigFileToIndexHandler($conf);
 
         $path = realpath(__DIR__ . '/../example_dist/simple/nested/bla-bla.txt');
         $transfer = new Transfer('bla-bla.txt', $path, 'txt');
@@ -35,7 +35,7 @@ class InjectConfigToIndexHandlerTest extends TestCase
         $conf = new Configuration(__DIR__ . '/../configuration', 'local');
         $conf->load();
 
-        $handler = new InjectConfigToIndexHandler($conf, 'local', 'sha1_of_code');
+        $handler = new InjectConfigFileToIndexHandler($conf);
 
         $path = realpath(__DIR__ . '/../example_dist/vue/index.html');
         $transfer = new Transfer('index.html', $path, 'html');
@@ -51,7 +51,7 @@ class InjectConfigToIndexHandlerTest extends TestCase
         $conf = new Configuration(__DIR__ . '/../configuration', 'local');
         $conf->load();
 
-        $handler = new InjectConfigToIndexHandler($conf, 'local', 'sha1_of_code');
+        $handler = new InjectConfigFileToIndexHandler($conf);
 
         $path = realpath(__DIR__ . '/../example_dist/empty_head/index.html');
         $transfer = new Transfer('index.html', $path, 'html');
@@ -64,10 +64,6 @@ class InjectConfigToIndexHandlerTest extends TestCase
 
     private function assertInject(Transfer $transfer)
     {
-        $this->assertRegExp('/window\.__stage = \'local\'/', $transfer->getContent());
-        $this->assertRegExp('/window\.__config/', $transfer->getContent());
-        $this->assertRegExp('/window\.__vcs = \'sha1_of_code\'/', $transfer->getContent());
-        $this->assertRegExp('/console\.log/', $transfer->getContent());
-        $this->assertNotContains('"server":', $transfer->getContent());
+        $this->assertContains('/__config.js', $transfer->getContent());
     }
 }

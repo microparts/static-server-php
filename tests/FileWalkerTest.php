@@ -12,7 +12,7 @@ namespace StaticServer\Tests;
 use Microparts\Configuration\ConfigurationInterface;
 use Psr\Log\NullLogger;
 use StaticServer\FileWalker;
-use StaticServer\Handler\InjectConfigToIndexHandler;
+use StaticServer\Handler\InjectConfigFileToIndexHandler;
 use StaticServer\Handler\LoadContentHandler;
 
 class FileWalkerTest extends TestCase
@@ -36,10 +36,10 @@ class FileWalkerTest extends TestCase
         $walker = new FileWalker(new NullLogger());
 
         $conf = $this->createMock(ConfigurationInterface::class);
-        $walker->addHandler(new InjectConfigToIndexHandler($conf, 'local', 'sha1_string...'));
+        $walker->addHandler(new InjectConfigFileToIndexHandler($conf));
 
         $this->assertCount(2, $walker->getHandlers());
-        $this->assertInstanceOf(InjectConfigToIndexHandler::class, $walker->getHandlers()[1]);
+        $this->assertInstanceOf(InjectConfigFileToIndexHandler::class, $walker->getHandlers()[1]);
     }
 
     public function testHowWalkerWalkIntoNestedDirs()

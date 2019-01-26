@@ -7,22 +7,50 @@ defaults:
     swoole:
       log_level: 3 # warning level, 0 debug
       http_compression: true
-      http_gzip_level: 6
     log_info:
       security: "%cDo you have a security note for this site? Please write a letter to us: %csecurity@teamc.io"
       job: "%cJob offer or partnership: %cwork@teamc.io"
-    mimes:
+    headers:
+      csp:
+        - default-src 'self'
+        - script-src 'self' cdnjs.cloudflare.com
+        - "img-src 'self' data:"
+        - style-src 'self' 'unsafe-inline' fonts.googleapis.com cdnjs.cloudflare.com
+        - "font-src 'self' data: fonts.gstatic.com cdnjs.cloudflare.com"
+        - form-action 'self'
+      feature_policy:
+        - geolocation 'none'
+        - payment 'none'
+        - microphone 'none'
+        - camera 'none'
+        - autoplay 'none'
+      referer_policy: no-referrer
+    mimes: # https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Complete_list_of_MIME_types
       map: application/json
       xml: application/xml
       json: application/json
       txt: text/plain
       html: text/html
+      htm: text/html
       md: text/plain
       css: text/css
       js: text/javascript
+      mjs: text/javascript
       png: image/png
       gif: image/gif
       jpg: image/jpg
       jpeg: image/jpg
+      svg: image/svg+xml
+      webp: image/webp
+      bmp: image/bmp
       ico: image/x-icon
-      mp4: video/mp4
+      tif: image/tiff
+      tiff: image/tiff
+      ts: application/typescript
+      otf: application/x-font-opentype
+      ttf: font/ttf
+      woff: font/woff
+      woff2: font/woff2
+      eot: application/vnd.ms-fontobject
+      sfnt: application/font-sfnt
+      csv: text/csv

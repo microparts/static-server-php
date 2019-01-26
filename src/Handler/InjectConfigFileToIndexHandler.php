@@ -14,7 +14,7 @@ use Microparts\Configuration\ConfigurationInterface;
 use SplFileInfo;
 use StaticServer\Transfer;
 
-final class InjectConfigToIndexHandler implements HandlerInterface
+final class InjectConfigFileToIndexHandler implements HandlerInterface
 {
     /**
      * @var \Microparts\Configuration\ConfigurationInterface
@@ -27,27 +27,13 @@ final class InjectConfigToIndexHandler implements HandlerInterface
     private $html5;
 
     /**
-     * @var string
-     */
-    private $stage;
-
-    /**
-     * @var string
-     */
-    private $vcsSha1;
-
-    /**
-     * InjectConfigToIndexHandler constructor.
+     * InjectConfigFileToIndexHandler constructor.
      *
      * @param \Microparts\Configuration\ConfigurationInterface $conf
-     * @param string $stage
-     * @param string $vcsSha1
      */
-    public function __construct(ConfigurationInterface $conf, string $stage, string $vcsSha1)
+    public function __construct(ConfigurationInterface $conf)
     {
         $this->conf = $conf;
-        $this->stage = $stage;
-        $this->vcsSha1 = $vcsSha1;
         $this->html5 = new HTML5();
     }
 
@@ -64,7 +50,8 @@ final class InjectConfigToIndexHandler implements HandlerInterface
 
         $dom = $this->html5->loadHTML($carry->getContent());
 
-        $script = $dom->createElement('script', $this->javascript());
+        $script = $dom->createElement('script');
+        $script->setAttribute('src', '/__config.js');
         $head = $dom->getElementsByTagName('head');
 
         // ignore injecting if <head> tag not found in the html file.
@@ -93,40 +80,5 @@ final class InjectConfigToIndexHandler implements HandlerInterface
         );
 
         return $carry;
-    }
-
-    /**
-     * @return string
-     */
-    private function javascript()
-    {
-        $template = <<<JS
-    window.__stage = '%s';
-    window.__config = JSON.parse('%s');
-    window.__vcs = '%s';
-
-    console.log('%s', 'color: #009688', 'color: #F44336');
-    console.log('%s', 'color: #009688', 'color: #F44336');
-JS;
-
-        return sprintf(
-            $template,
-            $this->stage,
-            json_encode($this->cleanupServerKeyFromConfig()),
-            $this->vcsSha1,
-            $this->conf->get('server.log_info.security'),
-            $this->conf->get('server.log_info.job')
-        );
-    }
-
-    /**
-     * @return array
-     */
-    private function cleanupServerKeyFromConfig(): array
-    {
-        $array = $this->conf->all();
-        unset($array['server']);
-
-        return $array;
     }
 }

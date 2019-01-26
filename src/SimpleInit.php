@@ -14,7 +14,8 @@ use Microparts\Configuration\ConfigurationInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 use Psr\Log\NullLogger;
-use StaticServer\Handler\InjectConfigToIndexHandler;
+use StaticServer\Handler\InjectConfigFileToIndexHandler;
+use StaticServer\Handler\PrepareConfigHandler;
 use StaticServer\Middleware\ContentSecurityPolicyMiddleware;
 use Symfony\Component\Yaml\Yaml;
 
@@ -137,18 +138,20 @@ final class SimpleInit
 
     /**
      * Start server with default configuration.
+     *
+     * @param bool $dryRun
      */
-    public function run()
+    public function run(bool $dryRun = false)
     {
         $walker = new FileWalker($this->logger);
-        $walker->addHandler(new InjectConfigToIndexHandler(
-            $this->conf, $this->stage, $this->sha1
-        ));
+        $walker->addGhostFile(__DIR__ . '/stub/__config.js');
+        $walker->addHandler(new InjectConfigFileToIndexHandler($this->conf));
+        $walker->addHandler(new PrepareConfigHandler($this->conf, $this->stage, $this->sha1));
 
         $http = new HttpApplication($this->conf, $this->logger, $walker);
 //        $http->use(new ContentSecurityPolicyMiddleware($this->conf));
 
-        $http->run();
+        $dryRun ? $http->dryRun() : $http->run();
     }
 
     /**

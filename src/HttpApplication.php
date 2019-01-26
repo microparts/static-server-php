@@ -8,6 +8,7 @@
 
 namespace StaticServer;
 
+use InvalidArgumentException;
 use Microparts\Configuration\ConfigurationInterface;
 use Psr\Log\LoggerInterface;
 use StaticServer\Middleware\MiddlewareInterface;
@@ -27,7 +28,7 @@ final class HttpApplication
     /**
      * @var array
      */
-    private static $headers = [];
+    private static $mimes = [];
 
     /**
      * @var \Microparts\Configuration\ConfigurationInterface
@@ -132,7 +133,9 @@ final class HttpApplication
      */
     private function registerOnRequestListener(): void
     {
-        $this->handler->on('request', function (Request $request, Response $response) {
+        $headers = $this->getHeadersValues();
+
+        $this->handler->on('request', function (Request $request, Response $response) use ($headers) {
             $uri = $request->server['request_uri'];
 
             $response->header('Expires', '0');
@@ -145,10 +148,10 @@ final class HttpApplication
             $response->header('x-frame-options', 'SAMEORIGIN');
             $response->header('x-content-type', 'nosniff');
             $response->header('X-Content-Type-Options', 'nosniff');
-            $response->header('Referrer-Policy', 'no-referrer');
-            $response->header('Feature-Policy', "geolocation 'none'; payment 'none'; microphone 'none'; camera 'none'; autoplay 'none'");
-
-            $response->header('content-security-policy', "default-src 'self' 'unsafe-inline' 'unsafe-eval' https: data:; object-src 'none'");
+            $response->header('X-UA-Compatible', 'IE=edge');
+            $response->header('Referrer-Policy', $headers['referer_policy']);
+            $response->header('Feature-Policy', $headers['feature_policy']);
+            $response->header('content-security-policy', $headers['csp']);
             $response->header('strict-transport-security', 'max-age=31536000; includeSubDomains; preload');
 
 //            foreach ($this->middleware as $middleware) {
@@ -157,14 +160,27 @@ final class HttpApplication
 
             // if passed URI is file from fs, return it.
             if (isset(self::$files[$uri])) {
-                $response->header('Content-Type', self::$headers[$uri] . '; charset=utf-8');
+                $response->header('Content-Type', self::$mimes[$uri] . '; charset=utf-8');
                 $response->end(self::$files[$uri]);
             } else {
                 // otherwise to forward the request to index file to handle it within javascript router.
-                $response->header('Content-Type', self::$headers['/'] . '; charset=utf-8');
+                $response->header('Content-Type', self::$mimes['/'] . '; charset=utf-8');
                 $response->end(self::$files['/']);
             }
         });
+    }
+
+    /**
+     * @return array
+     */
+    private function getHeadersValues(): array
+    {
+        $array = [];
+        foreach ($this->conf->get('server.headers', []) as $header => $value) {
+            $array[$header] = join(';', (array) $value);
+        }
+
+        return $array;
     }
 
     /**
@@ -174,20 +190,35 @@ final class HttpApplication
      */
     private function doLoadInTheMemory(): void
     {
-        $root = realpath($this->conf->get('server.root'));
+        $root = $this->getRootPath();
         $generator = $this->walker->walk($root);
 
         /** @var \StaticServer\Transfer $item */
         foreach ($generator as $item) {
             $key = substr($item->getRealpath(), strlen($root));
             self::$files[$key] = $item->getContent();
-            self::$headers[$key] = $this->conf->get('server.mimes.' . $item->getExtension(), 'text/plain');
+            self::$mimes[$key] = $this->conf->get('server.mimes.' . $item->getExtension(), 'text/plain');
 
             // Default page.
             if ($item->getFilename() === $this->conf->get('server.index')) {
                 self::$files['/'] = $item->getContent();
-                self::$headers['/'] = $this->conf->get('server.mimes.html');
+                self::$mimes['/'] = $this->conf->get('server.mimes.html');
             }
         }
+    }
+
+    /**
+     * @return string
+     */
+    private function getRootPath(): string
+    {
+        $root = realpath($this->conf->get('server.root'));
+
+        // If it exist, check if it's a directory
+        if($root !== false && is_dir($root)) {
+            return $root;
+        }
+
+        throw new InvalidArgumentException('Root server directory not found or it is not directory.');
     }
 }
