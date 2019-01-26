@@ -77,18 +77,18 @@ server:
     job: '%cJob offer or partnership: %cwork@teamc.io'
   headers:
     csp:
-      - 'default-src ''self'''
-      - 'script-src ''self'' cdnjs.cloudflare.com'
-      - 'img-src ''self'' data:'
-      - 'style-src ''self'' ''unsafe-inline'' fonts.googleapis.com cdnjs.cloudflare.com'
-      - 'font-src ''self'' data: fonts.gstatic.com cdnjs.cloudflare.com'
-      - 'form-action ''self'''
+      - default-src 'self'
+      - script-src 'self' cdnjs.cloudflare.com
+      - "img-src 'self' data:"
+      - style-src 'self' 'unsafe-inline' fonts.googleapis.com cdnjs.cloudflare.com
+      - "font-src 'self' data: fonts.gstatic.com cdnjs.cloudflare.com"
+      - form-action 'self'
     feature_policy:
-      - 'geolocation ''none'''
-      - 'payment ''none'''
-      - 'microphone ''none'''
-      - 'camera ''none'''
-      - 'autoplay ''none'''
+      - geolocation 'none'
+      - payment 'none'
+      - microphone 'none'
+      - camera 'none'
+      - autoplay 'none'
     referer_policy: no-referrer
   mimes:
     map: application/json
