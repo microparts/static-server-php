@@ -166,8 +166,29 @@ Content-Security-Policy: default-src 'self';script-src 'self' cdnjs.cloudflare.c
 Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
 ```
 
-Also, frontend developer can be manually add `Content Security Policy` protection,
-use HTML meta tag. [Read more](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy#Examples).
+`A+` rating issued by the site https://securityheaders.com. [Proof](./resource/secureheaderscom.png).
+
+
+Also, frontend developer can be manually add `Content Security Policy` protection.
+
+1) Or configure server himself, just add this section to config dir (STAGE=dev):
+
+**Recommended way.**
+
+```yaml
+dev:
+  server:
+    headers:
+      csp:
+        - default-src 'self' *.teamcsrv.com *.teamc.io
+        - script-src 'self'
+        - "img-src 'self' data:"
+        - style-src 'self' 'unsafe-inline' fonts.googleapis.com
+        - "font-src 'self' data: fonts.gstatic.com"
+        - form-action 'self'
+```
+
+2) Use HTML meta tag. [Read more](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy#Examples).
 
 ## Compression
 

@@ -2,3 +2,4 @@
 configuration/local/
 .git
 vendor/
+resource/
