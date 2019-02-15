@@ -138,9 +138,9 @@ final class HttpApplication
         $this->handler->on('request', function (Request $request, Response $response) use ($headers) {
             $uri = $request->server['request_uri'];
 
-            $response->header('Expires', '0');
-            $response->header('Pragma', 'public');
-            $response->header('Cache-Control', '"public, must-revalidate, proxy-revalidate"');
+            $response->header('Expires', $headers['expires']);
+            $response->header('Pragma', $headers['pragma']);
+            $response->header('Cache-Control', $headers['cache_control']);
 
             $response->header('software-server', '');
             $response->header('server', '');
@@ -175,9 +175,16 @@ final class HttpApplication
      */
     private function getHeadersValues(): array
     {
+        $template = [
+            '{{next_year}}' => (int) date('Y') + 1,
+        ];
+
+        $k = array_keys($template);
+        $v = array_values($template);
+
         $array = [];
         foreach ($this->conf->get('server.headers', []) as $header => $value) {
-            $array[$header] = join(';', (array) $value);
+            $array[$header] = join(';', (array) str_replace($k, $v, $value));
         }
 
         return $array;

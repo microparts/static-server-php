@@ -26,6 +26,9 @@ defaults:
         - camera 'none'
         - autoplay 'none'
       referer_policy: no-referrer
+      expires: Wed, 21 Oct {{next_year}} 07:28:00 GMT
+      pragma: public
+      cache_control: public, must-revalidate, proxy-revalidate, max-age=31536000
     mimes: # https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Complete_list_of_MIME_types
       map: application/json
       xml: application/xml
