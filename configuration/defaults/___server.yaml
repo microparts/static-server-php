@@ -7,6 +7,7 @@ defaults:
     swoole:
       log_level: 3 # warning level, 0 debug
       http_compression: true
+      buffer_output_size: 33554432 # 32 * 1024 * 1024
     log_info:
       security: "%cDo you have a security note for this site? Please write a letter to us: %csecurity@teamc.io"
       job: "%cJob offer or partnership: %cwork@teamc.io"
