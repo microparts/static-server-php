@@ -145,7 +145,7 @@ final class HttpApplication
             $response->header('software-server', '');
             $response->header('server', '');
             $response->header('x-xss-protection', '1; mode=block');
-            $response->header('x-frame-options', 'SAMEORIGIN');
+            $response->header('x-frame-options', $headers['frame_options']);
             $response->header('x-content-type', 'nosniff');
             $response->header('X-Content-Type-Options', 'nosniff');
             $response->header('X-UA-Compatible', 'IE=edge');
