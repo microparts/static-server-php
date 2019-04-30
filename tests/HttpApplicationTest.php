@@ -12,6 +12,7 @@ class HttpApplicationTest extends TestCase
         try {
             SimpleInit::silent()->run(true);
         } catch (Throwable $e) {
+            printf($e);
             $this->assertFalse((bool) $e);
         }
 

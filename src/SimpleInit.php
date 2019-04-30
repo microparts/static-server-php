@@ -10,7 +10,6 @@ use Psr\Log\NullLogger;
 use StaticServer\Handler\InjectConfigFileToIndexHandler;
 use StaticServer\Handler\PrepareConfigHandler;
 //use StaticServer\Middleware\ContentSecurityPolicyMiddleware;
-use Symfony\Component\Yaml\Yaml;
 
 final class SimpleInit
 {
@@ -85,7 +84,7 @@ final class SimpleInit
      */
     public static function new()
     {
-        $stage = getenv('STAGE') ?: 'local';
+        $stage = getenv('STAGE') ?: 'defaults';
         $sha1  = getenv('VCS_SHA1') ?: '';
         $level = getenv('LOG_LEVEL') ?: LogLevel::INFO;
 
@@ -97,7 +96,7 @@ final class SimpleInit
      */
     public static function silent()
     {
-        $stage = getenv('STAGE') ?: 'local';
+        $stage = getenv('STAGE') ?: 'defaults';
         $sha1  = getenv('VCS_SHA1') ?: '';
         $level = getenv('LOG_LEVEL') ?: LogLevel::INFO;
 
