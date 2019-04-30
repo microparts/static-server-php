@@ -13,13 +13,14 @@
     "microparts/configuration-php": "2.*",
     "monolog/monolog": "^1.24",
     "masterminds/html5": "^2.5",
-    "symfony/console": "^4.2"
+    "symfony/console": "^4.2",
+    "microparts/logs-php": "^1.0"
   },
   "require-dev": {
     "roave/security-advisories": "dev-master",
     "eaglewu/swoole-ide-helper": "dev-master",
-    "symfony/var-dumper": "^4.1",
-    "phpunit/phpunit": "^7.4"
+    "symfony/var-dumper": "^4",
+    "phpunit/phpunit": "^8"
   },
   "autoload": {
     "psr-4": {

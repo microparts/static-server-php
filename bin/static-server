@@ -18,7 +18,7 @@ foreach ($locations as $file) {
     }
 }
 
-$app = new Application('Static server', '1.0.0');
+$app = new Application('Static server', '1.0.3');
 $app->add(new RunServerCommand());
 $app->add(new DumpConfigCommand());
 $app->run();

@@ -1,12 +1,5 @@
 <?php declare(strict_types=1);
 
-/**
- * Created by Roquie.
- * E-mail: roquie0@gmail.com
- * GitHub: Roquie
- * Date: 2019-01-18
- */
-
 namespace StaticServer\Tests\Middleware;
 
 use Microparts\Configuration\Configuration;

@@ -2,3 +2,4 @@
 configuration/local/
 vendor/
 example/vue-app/dist
+.phpunit.result.cache

@@ -21,7 +21,7 @@ Server created for javascript SPA apps like: Vue, React, Angular, etc.
 ## Docker usage
 
 ```Dockerfile
-FROM microparts/static-server-php:1.0.0
+FROM microparts/static-server-php:1.0.3
 
 COPY dist/ /app
 COPY ./configuration /app/configuration

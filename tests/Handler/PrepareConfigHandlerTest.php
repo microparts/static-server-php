@@ -1,11 +1,5 @@
 <?php declare(strict_types=1);
 
-/**
- * Created by Roquie.
- * E-mail: roquie0@gmail.com
- * GitHub: Roquie
- */
-
 namespace StaticServer\Tests\Handler;
 
 use Microparts\Configuration\Configuration;
@@ -30,6 +24,6 @@ class PrepareConfigHandlerTest extends TestCase
         $this->assertRegExp('/window\.__config/', $transfer->getContent());
         $this->assertRegExp('/window\.__vcs = \'sha1_of_code\'/', $transfer->getContent());
         $this->assertRegExp('/console\.log/', $transfer->getContent());
-        $this->assertNotContains('"server":', $transfer->getContent());
+        $this->assertStringNotContainsString('"server":', $transfer->getContent());
     }
 }

@@ -1,42 +1,19 @@
 <?php declare(strict_types=1);
-/**
- * Created by Roquie.
- * E-mail: roquie0@gmail.com
- * GitHub: Roquie
- * Date: 2019-01-19
- */
 
 namespace StaticServer;
 
-use LogicException;
 use Microparts\Configuration\Configuration;
-use Microparts\Configuration\ConfigurationInterface;
+use Microparts\Logger\Logger;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 use Psr\Log\NullLogger;
 use StaticServer\Handler\InjectConfigFileToIndexHandler;
 use StaticServer\Handler\PrepareConfigHandler;
-use StaticServer\Middleware\ContentSecurityPolicyMiddleware;
+//use StaticServer\Middleware\ContentSecurityPolicyMiddleware;
 use Symfony\Component\Yaml\Yaml;
 
 final class SimpleInit
 {
-    /**
-     * Possible path's of configuration.
-     *
-     * @var array
-     */
-    private $possibleConfLocations = [
-        '/app/configuration',
-        './configuration',
-        __DIR__ . '/../configuration',
-    ];
-
-    /**
-     * @var string
-     */
-    private $path;
-
     /**
      * @var string
      */
@@ -58,7 +35,7 @@ final class SimpleInit
     private $logger;
 
     /**
-     * @var \Microparts\Configuration\ConfigurationInterface
+     * @var \Microparts\Configuration\Configuration
      */
     private $conf;
 
@@ -72,20 +49,11 @@ final class SimpleInit
      */
     public function __construct(string $stage, string $sha1, string $level = LogLevel::INFO, LoggerInterface $logger = null)
     {
-        $this->path   = $this->findConfiguration();
         $this->stage  = $stage;
         $this->sha1   = $sha1;
         $this->level  = $level;
-        $this->logger = $logger ?: PrettyLogger::create($this->level);
+        $this->logger = $logger ?: Logger::new('Server', $level);
         $this->conf   = $this->loadConf();
-    }
-
-    /**
-     * @return string
-     */
-    public function getPath(): string
-    {
-        return $this->path;
     }
 
     /**
@@ -161,41 +129,23 @@ final class SimpleInit
      */
     public function dump(): string
     {
-        printf("CONFIG_PATH = %s\n", $this->getPath());
+        printf("CONFIG_PATH = %s\n", $this->conf->getPath());
         printf("STAGE = %s\n", $this->getStage());
         printf("VCS_SHA1 = %s\n", $this->getSha1());
         printf("LOG_LEVEL = %s\n", $this->getLevel());
 
-        return PHP_EOL . Yaml::dump($this->conf->all(), 10, 2);
+        return $this->conf->dump();
     }
 
     /**
-     * @return \Microparts\Configuration\ConfigurationInterface
+     * @return Configuration
      */
-    private function loadConf(): ConfigurationInterface
+    private function loadConf(): Configuration
     {
-        $conf = new Configuration($this->path, $this->stage);
+        $conf = Configuration::auto($this->getStage());
         $conf->setLogger($this->logger);
         $conf->load();
 
         return $conf;
-    }
-
-    /**
-     * @return mixed
-     */
-    private function findConfiguration()
-    {
-        if ($value = trim((string) getenv('CONFIG_PATH'))) {
-            $this->possibleConfLocations[] = $value;
-        }
-
-        foreach ($this->possibleConfLocations as $path) {
-            if (file_exists($path)) {
-                return $path;
-            }
-        }
-
-        throw new LogicException('Configuration of server not found in known path\'s');
     }
 }

@@ -1,12 +1,5 @@
 <?php declare(strict_types=1);
 
-/**
- * Created by Roquie.
- * E-mail: roquie0@gmail.com
- * GitHub: Roquie
- * Date: 2019-01-15
- */
-
 use StaticServer\SimpleInit;
 
 require_once __DIR__ . '/vendor/autoload.php';

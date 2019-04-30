@@ -1,10 +1,4 @@
 <?php declare(strict_types=1);
-/**
- * Created by Roquie.
- * E-mail: roquie0@gmail.com
- * GitHub: Roquie
- * Date: 2019-01-15
- */
 
 namespace StaticServer;
 
@@ -162,6 +156,10 @@ final class HttpApplication
             if (isset(self::$files[$uri])) {
                 $response->header('Content-Type', self::$mimes[$uri] . '; charset=utf-8');
                 $response->end(self::$files[$uri]);
+                // if file not found in memory and it has extension, return 404
+            } elseif (pathinfo($uri, PATHINFO_EXTENSION)) {
+                $response->status(404);
+                $response->end('404 not found');
             } else {
                 // otherwise to forward the request to index file to handle it within javascript router.
                 $response->header('Content-Type', self::$mimes['/'] . '; charset=utf-8');
