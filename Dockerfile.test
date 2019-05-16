@@ -8,8 +8,9 @@ FROM roquie/docker-swoole-webapp:7.3-latest
 COPY --from=0 /app /app
 
 RUN apk --no-cache update \
-    && apk --no-cache add bash php7-xdebug --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ \
-    && echo "zend_extension=/usr/lib/php7/modules/xdebug.so\nxdebug.coverage_enable=1" > /etc/php7/php.ini
+    && apk --no-cache add g++ make autoconf automake libtool bison re2c \
+    && yes | pecl install xdebug \
+    && echo -e "zend_extension=/usr/local/lib/php/extensions/no-debug-non-zts-20180731/xdebug.so\nxdebug.coverage_enable=1" > /usr/local/etc/php/php.ini
 
 EXPOSE 8080
 WORKDIR /app
