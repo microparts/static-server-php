@@ -7,8 +7,11 @@ FROM roquie/docker-swoole-webapp:7.3-latest
 
 COPY --from=0 /app /app
 
+RUN apk --no-cache update \
+    && apk --no-cache add bash php7-xdebug --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ \
+    && echo "zend_extension=/usr/lib/php7/modules/xdebug.so\nxdebug.coverage_enable=1" > /etc/php7/php.ini
+
 EXPOSE 8080
 WORKDIR /app
 
-ENTRYPOINT vendor/bin/phpunit
-CMD ["sh", "-c", "vendor/bin/phpunit"]
+ENTRYPOINT ["bash", "-c", "vendor/bin/phpunit --coverage-clover=coverage.xml && bash <(curl -s https://codecov.io/bash)"]

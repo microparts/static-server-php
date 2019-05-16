@@ -9,7 +9,7 @@ jobs:
           command: docker build -f Dockerfile.test -t unit:latest .
       - run:
           name: Run tests
-          command: docker run --rm -it unit:latest
+          command: docker run --rm -it -e CODECOV_TOKEN=$CODECOV_TOKEN unit:latest
   deploy:
     machine: true
     steps:
