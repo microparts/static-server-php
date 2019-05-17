@@ -2,6 +2,8 @@ Static server
 -------------
 
 [![CircleCI](https://circleci.com/gh/microparts/static-server-php/tree/master.svg?style=svg)](https://circleci.com/gh/microparts/static-server-php/tree/master)
+[![codecov](https://codecov.io/gh/microparts/static-server-php/branch/master/graph/badge.svg)](https://codecov.io/gh/microparts/static-server-php)
+
 
 Special static server with support corporate standard of configuration and more.
 It has the similar performance compare with the Nginx static files server.
