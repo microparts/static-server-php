@@ -14,8 +14,4 @@ RUN apk --no-cache update \
 
 RUN vendor/bin/phpunit --coverage-clover=/app/coverage.xml
 
-FROM circleci/php:7.3-browsers
-COPY --from=1 /app/coverage.xml /tmp/coverage.xml
-
-USER root
-CMD ["bash", "-c", "curl -s https://codecov.io/bash >> /tmp/codecov.sh && chmod +x /tmp/codecov.sh && /tmp/codecov.sh -s /tmp"]
+ENTRYPOINT cp /app/coverage.xml /tmp

@@ -5,11 +5,15 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Create testing environment
+          name: Create testing environment & Run tests
           command: docker build -f Dockerfile.test -t unit:latest .
       - run:
-          name: Run tests
-          command: docker run --rm -it -e CODECOV_TOKEN=$CODECOV_TOKEN unit:latest
+          name: Send code coverage report to Codecov
+          command: |
+            docker run --rm -it -v $(pwd)/coverage:/tmp unit:latest cp /app/coverage.xml /tmp
+            mv ./coverage/coverage.xml ./
+            bash <(curl -s https://codecov.io/bash)
+
   deploy:
     machine: true
     steps:
