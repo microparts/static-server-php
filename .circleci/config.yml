@@ -10,9 +10,8 @@ jobs:
       - run:
           name: Send code coverage report to Codecov
           command: |
-            docker run --rm -it -v $(pwd)/coverage:/tmp unit:latest cp /app/coverage.xml /tmp
-            sudo mv ./coverage/coverage.xml ./
-            sudo bash <(curl -s https://codecov.io/bash)
+            docker run --rm -it -v $(pwd)/coverage:/tmp unit:latest
+            bash <(curl -s https://codecov.io/bash)
 
   deploy:
     machine: true
