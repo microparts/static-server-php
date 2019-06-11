@@ -3,14 +3,14 @@
 namespace StaticServer\Tests\Handler;
 
 use SplFileInfo;
-use StaticServer\Handler\LoadContentHandler;
+use StaticServer\Modifier\LoadContentModify;
 use StaticServer\Tests\TestCase;
 
 class LoadContentHandlerTest extends TestCase
 {
     public function testLoadContentForConcreteFile()
     {
-        $handler = new LoadContentHandler();
+        $handler = new LoadContentModify();
 
         $path = realpath(__DIR__ . '/../example_dist/simple/nested/bla-bla.txt');
 

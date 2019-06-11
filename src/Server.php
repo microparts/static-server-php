@@ -7,11 +7,12 @@ use Microparts\Logger\Logger;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 use Psr\Log\NullLogger;
-use StaticServer\Handler\InjectConfigFileToIndexHandler;
-use StaticServer\Handler\PrepareConfigHandler;
-//use StaticServer\Middleware\ContentSecurityPolicyMiddleware;
+use StaticServer\Modifier\Modify;
+use StaticServer\Modifier\InjectConfigFileToIndexModify;
+use StaticServer\Modifier\NullModify;
+use StaticServer\Modifier\PrepareConfigModify;
 
-final class SimpleInit
+final class Server
 {
     /**
      * @var string
@@ -39,7 +40,7 @@ final class SimpleInit
     private $conf;
 
     /**
-     * SimpleInit constructor.
+     * Server constructor.
      *
      * @param string $stage
      * @param string $sha1
@@ -51,7 +52,7 @@ final class SimpleInit
         $this->stage  = $stage;
         $this->sha1   = $sha1;
         $this->level  = $level;
-        $this->logger = $logger ?: Logger::new('Server', $level);
+        $this->logger = $logger ?: Logger::default('Server', $level);
         $this->conf   = $this->loadConf();
     }
 
@@ -80,7 +81,7 @@ final class SimpleInit
     }
 
     /**
-     * @return \StaticServer\SimpleInit
+     * @return \StaticServer\Server
      */
     public static function new()
     {
@@ -88,11 +89,11 @@ final class SimpleInit
         $sha1  = getenv('VCS_SHA1') ?: '';
         $level = getenv('LOG_LEVEL') ?: LogLevel::INFO;
 
-        return new SimpleInit($stage, $sha1, $level);
+        return new Server($stage, $sha1, $level);
     }
 
     /**
-     * @return \StaticServer\SimpleInit
+     * @return \StaticServer\Server
      */
     public static function silent()
     {
@@ -100,23 +101,30 @@ final class SimpleInit
         $sha1  = getenv('VCS_SHA1') ?: '';
         $level = getenv('LOG_LEVEL') ?: LogLevel::INFO;
 
-        return new SimpleInit($stage, $sha1, $level, new NullLogger());
+        return new Server($stage, $sha1, $level, new NullLogger());
     }
 
     /**
      * Start server with default configuration.
      *
+     * @param bool $modify
      * @param bool $dryRun
      */
-    public function run(bool $dryRun = false)
+    public function run(bool $modify = true, bool $dryRun = false)
     {
-        $walker = new FileWalker($this->logger);
-        $walker->addGhostFile(__DIR__ . '/stub/__config.js');
-        $walker->addHandler(new InjectConfigFileToIndexHandler($this->conf));
-        $walker->addHandler(new PrepareConfigHandler($this->conf, $this->stage, $this->sha1));
+        if ($modify) {
+            $location = $this->getConfigName('/__config.js');
+            $mod = new Modify();
+            $mod->addGhostFile(__DIR__ . '/stub/__config.js', $location);
+            $mod->addModifier(new PrepareConfigModify($this->conf, $this->stage, $this->sha1));
+            $mod->addModifier(new InjectConfigFileToIndexModify($this->conf, $location));
+        } else {
+            $mod = new NullModify();
+        }
 
-        $http = new HttpApplication($this->conf, $this->logger, $walker);
-//        $http->use(new ContentSecurityPolicyMiddleware($this->conf));
+        $http = new HttpApplication($this->conf);
+        $http->setLogger($this->logger);
+        $http->setModifier($mod);
 
         $dryRun ? $http->dryRun() : $http->run();
     }
@@ -146,5 +154,26 @@ final class SimpleInit
         $conf->load();
 
         return $conf;
+    }
+
+    /**
+     * @param string $location
+     * @return string
+     */
+    private function getConfigName(string $location): string
+    {
+        if (strlen($this->getSha1()) < 1) {
+            return $location;
+        }
+
+        $file = pathinfo($location);
+
+        return sprintf(
+            '%s%s_%s.%s',
+            $file['dirname'],
+            $file['filename'],
+            $this->getSha1(),
+            $file['extension']
+        );
     }
 }

@@ -2,7 +2,7 @@
 
 namespace StaticServer\Console;
 
-use StaticServer\SimpleInit;
+use StaticServer\Server;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -27,7 +27,7 @@ class DumpConfigCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $string = SimpleInit::silent()->dump();
+        $string = Server::silent()->dump();
 
         $output->writeln($string);
     }

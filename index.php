@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-use StaticServer\SimpleInit;
+use StaticServer\Server;
 
 require_once __DIR__ . '/vendor/autoload.php';
 
@@ -10,4 +10,4 @@ require_once __DIR__ . '/vendor/autoload.php';
 // VCS_SHA1 – build commit sha1 for debug
 // LOG_LEVEL – level of logging. Important! For swoole server, log_level needs to be set up in the `server.yaml` configuration file.
 
-SimpleInit::new()->run();
+Server::new()->run();

@@ -4,8 +4,8 @@ namespace StaticServer\Tests\Handler;
 
 use Microparts\Configuration\Configuration;
 use SplFileInfo;
-use StaticServer\Handler\LoadContentHandler;
-use StaticServer\Handler\PrepareConfigHandler;
+use StaticServer\Modifier\LoadContentModify;
+use StaticServer\Modifier\PrepareConfigModify;
 use StaticServer\Tests\TestCase;
 
 class PrepareConfigHandlerTest extends TestCase
@@ -15,8 +15,8 @@ class PrepareConfigHandlerTest extends TestCase
         $conf = new Configuration(__DIR__ . '/../configuration');
         $conf->load();
 
-        $load = new LoadContentHandler();
-        $handler = new PrepareConfigHandler($conf, 'local', 'sha1_of_code');
+        $load = new LoadContentModify();
+        $handler = new PrepareConfigModify($conf, 'local', 'sha1_of_code');
         $file = new SplFileInfo(__DIR__ . '/../../src/stub/__config.js');
         $transfer = $handler($load(null, $file), $file);
 

@@ -22,6 +22,11 @@ final class Transfer
     /**
      * @var string
      */
+    private $location;
+
+    /**
+     * @var string
+     */
     private $content = '';
 
     /**
@@ -30,14 +35,16 @@ final class Transfer
      * @param string $filename
      * @param string $realpath
      * @param string $extension
+     * @param string $location
      * @param string $content
      */
-    public function __construct(string $filename, string $realpath, string $extension, string $content = '')
+    public function __construct(string $filename, string $realpath, string $extension, string $location, string $content = '')
     {
-        $this->filename = $filename;
+        $this->filename  = $filename;
         $this->extension = $extension;
-        $this->realpath = $realpath;
-        $this->content = $content;
+        $this->realpath  = $realpath;
+        $this->location  = $location;
+        $this->content   = $content;
     }
 
     /**
@@ -73,6 +80,14 @@ final class Transfer
     }
 
     /**
+     * @param string $location
+     */
+    public function setLocation(string $location): void
+    {
+        $this->location = $location;
+    }
+
+    /**
      * @return string
      */
     public function getFilename(): string
@@ -102,5 +117,13 @@ final class Transfer
     public function getRealpath(): string
     {
         return $this->realpath;
+    }
+
+    /**
+     * @return string
+     */
+    public function getLocation(): string
+    {
+        return $this->location;
     }
 }

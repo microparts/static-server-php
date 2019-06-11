@@ -4,40 +4,40 @@ namespace StaticServer\Tests;
 
 use Microparts\Configuration\ConfigurationInterface;
 use Psr\Log\NullLogger;
-use StaticServer\FileWalker;
-use StaticServer\Handler\InjectConfigFileToIndexHandler;
-use StaticServer\Handler\LoadContentHandler;
+use StaticServer\Modifier\Modify;
+use StaticServer\Modifier\InjectConfigFileToIndexModify;
+use StaticServer\Modifier\LoadContentModify;
 
 class FileWalkerTest extends TestCase
 {
     public function testDefaultHandlerIsInitialized()
     {
-        $walker = new FileWalker(new NullLogger());
+        $walker = new Modify(new NullLogger());
 
-        $this->assertInstanceOf(LoadContentHandler::class, $walker->getHandlers()[0]);
+        $this->assertInstanceOf(LoadContentModify::class, $walker->getModifiers()[0]);
     }
 
     public function testHandlerIsAlone()
     {
-        $walker = new FileWalker(new NullLogger());
+        $walker = new Modify(new NullLogger());
 
-        $this->assertCount(1, $walker->getHandlers());
+        $this->assertCount(1, $walker->getModifiers());
     }
 
     public function testHandlerIsCanBeAdded()
     {
-        $walker = new FileWalker(new NullLogger());
+        $walker = new Modify(new NullLogger());
 
         $conf = $this->createMock(ConfigurationInterface::class);
-        $walker->addHandler(new InjectConfigFileToIndexHandler($conf));
+        $walker->addModifier(new InjectConfigFileToIndexModify($conf));
 
-        $this->assertCount(2, $walker->getHandlers());
-        $this->assertInstanceOf(InjectConfigFileToIndexHandler::class, $walker->getHandlers()[1]);
+        $this->assertCount(2, $walker->getModifiers());
+        $this->assertInstanceOf(InjectConfigFileToIndexModify::class, $walker->getModifiers()[1]);
     }
 
     public function testHowWalkerWalkIntoNestedDirs()
     {
-        $walker = new FileWalker(new NullLogger());
+        $walker = new Modify(new NullLogger());
         $gen = $walker->walk(__DIR__ . '/example_dist/simple');
 
         $counter = 0;
@@ -63,7 +63,7 @@ class FileWalkerTest extends TestCase
 
     public function testHowWalkerWalkInTheEmptyDir()
     {
-        $walker = new FileWalker(new NullLogger());
+        $walker = new Modify(new NullLogger());
         $gen = $walker->walk(__DIR__ . '/example_dist/empty');
 
         $this->assertSame([], iterator_to_array($gen));
@@ -71,7 +71,7 @@ class FileWalkerTest extends TestCase
 
     public function testHowWalkerSkipFolders()
     {
-        $walker = new FileWalker(new NullLogger());
+        $walker = new Modify(new NullLogger());
         $gen = $walker->walk(__DIR__ . '/example_dist/vue');
 
         /** @var \StaticServer\Transfer $item */

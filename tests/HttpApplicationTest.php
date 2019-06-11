@@ -2,7 +2,7 @@
 
 namespace StaticServer\Tests;
 
-use StaticServer\SimpleInit;
+use StaticServer\Server;
 use Throwable;
 
 class HttpApplicationTest extends TestCase
@@ -10,7 +10,7 @@ class HttpApplicationTest extends TestCase
     public function testInit()
     {
         try {
-            SimpleInit::silent()->run(true);
+            Server::silent()->run(true);
         } catch (Throwable $e) {
             printf($e);
             $this->assertFalse((bool) $e);

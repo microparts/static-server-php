@@ -1,12 +1,12 @@
 <?php declare(strict_types=1);
 
-namespace StaticServer\Handler;
+namespace StaticServer\Modifier;
 
 use Microparts\Configuration\ConfigurationInterface;
 use SplFileInfo;
 use StaticServer\Transfer;
 
-final class PrepareConfigHandler implements HandlerInterface
+final class PrepareConfigModify implements ModifyInterface
 {
     /**
      * @var \Microparts\Configuration\ConfigurationInterface
@@ -24,7 +24,7 @@ final class PrepareConfigHandler implements HandlerInterface
     private $vcsSha1;
 
     /**
-     * PrepareConfigHandler constructor.
+     * PrepareConfigModify constructor.
      *
      * @param \Microparts\Configuration\ConfigurationInterface $conf
      * @param string $stage
@@ -38,24 +38,21 @@ final class PrepareConfigHandler implements HandlerInterface
     }
 
     /**
-     * @param Transfer $carry
-     * @param \SplFileInfo $item
-     * @return Transfer
+     * @param \StaticServer\Transfer $changed
+     * @param \StaticServer\Transfer $origin
+     * @return \StaticServer\Transfer
      */
-    public function __invoke($carry, SplFileInfo $item): Transfer
+    public function __invoke(Transfer $changed, Transfer $origin): Transfer
     {
-        if ($item->getFilename() !== '__config.js') {
-            return $carry;
+        if ($origin->getFilename() !== '__config.js') {
+            return $changed;
         }
 
-        $location = realpath($this->conf->get('server.root')) . '/__config.js';
-        $carry->setRealpath($location);
-
-        $carry->setContent(
-            $this->prepare($carry)
+        $changed->setContent(
+            $this->prepare($changed)
         );
 
-        return $carry;
+        return $changed;
     }
 
     /**
@@ -64,13 +61,20 @@ final class PrepareConfigHandler implements HandlerInterface
      */
     private function prepare(Transfer $transfer)
     {
+        $information = sprintf(
+            $this->conf->get('server.log_info'),
+            $this->stage,
+            $this->vcsSha1
+        );
+
+//        $contents = preg_replace('/\s+/', '', );
+
         return sprintf(
             $transfer->getContent(),
             $this->stage,
             json_encode($this->cleanupServerKeyFromConfig()),
             $this->vcsSha1,
-            $this->conf->get('server.log_info.security'),
-            $this->conf->get('server.log_info.job')
+            $information
         );
     }
 

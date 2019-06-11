@@ -2,27 +2,23 @@
 
 namespace StaticServer;
 
-use InvalidArgumentException;
 use Microparts\Configuration\ConfigurationInterface;
-use Psr\Log\LoggerInterface;
-use StaticServer\Middleware\MiddlewareInterface;
+use Psr\Log\LoggerAwareTrait;
+use Psr\Log\NullLogger;
+use StaticServer\Compression\Compress;
+use StaticServer\Iterator\IteratorInterface;
+use StaticServer\Iterator\RecursiveIterator;
+use StaticServer\Modifier\GenericModifyInterface;
+use StaticServer\Modifier\NullModify;
+use StaticServer\Processor\ProcessorInterface;
+use StaticServer\Processor\SpaProcessor;
 use Swoole\Http\Request;
 use Swoole\Http\Response;
 use Swoole\Http\Server;
 
 final class HttpApplication
 {
-    /**
-     * Cached files.
-     *
-     * @var array
-     */
-    private static $files = [];
-
-    /**
-     * @var array
-     */
-    private static $mimes = [];
+    use LoggerAwareTrait;
 
     /**
      * @var \Microparts\Configuration\ConfigurationInterface
@@ -30,47 +26,76 @@ final class HttpApplication
     private $conf;
 
     /**
-     * @var \Psr\Log\LoggerInterface
-     */
-    private $logger;
-
-    /**
      * @var Server
      */
-    private $handler;
+    private $server;
 
     /**
-     * @var \StaticServer\FileWalker
+     * @var \StaticServer\Compression\Compress
      */
-    private $walker;
+    private $compress;
 
     /**
-     * @var MiddlewareInterface[]
+     * @var \StaticServer\Header
      */
-    private $middleware;
+    private $header;
+
+    /**
+     * @var \StaticServer\Processor\ProcessorInterface
+     */
+    private $processor;
+
+    /**
+     * @var \StaticServer\Iterator\IteratorInterface
+     */
+    private $iterator;
+
+    /**
+     * @var \StaticServer\Modifier\GenericModifyInterface
+     */
+    private $modify;
 
     /**
      * HttpApplication constructor.
      *
      * @param \Microparts\Configuration\ConfigurationInterface $conf
-     * @param \Psr\Log\LoggerInterface $logger
-     * @param \StaticServer\FileWalker $walker
      */
-    public function __construct(ConfigurationInterface $conf, LoggerInterface $logger, FileWalker $walker)
+    public function __construct(ConfigurationInterface $conf)
     {
-        $this->handler = $this->createServer($conf);
-        $this->conf    = $conf;
-        $this->logger  = $logger;
-        $this->walker  = $walker;
+        $this->server = $this->createServer($conf);
+        $this->conf   = $conf;
+
+        $this->compress = new Compress($conf);
+        $this->header   = new Header($conf);
+
+        $this->setLogger(new NullLogger());
+        $this->setModifier(new NullModify());
+        $this->setProcessor(new SpaProcessor($conf));
+        $this->setIterator(new RecursiveIterator($conf, $this->logger));
     }
 
     /**
-     * @param $middleware
-     * @return void
+     * @param \StaticServer\Processor\ProcessorInterface $processor
      */
-    public function use(MiddlewareInterface $middleware): void
+    public function setProcessor(ProcessorInterface $processor): void
     {
-        $this->middleware[] = $middleware;
+        $this->processor = $processor;
+    }
+
+    /**
+     * @param \StaticServer\Iterator\IteratorInterface $iterator
+     */
+    public function setIterator(IteratorInterface $iterator): void
+    {
+        $this->iterator = $iterator;
+    }
+
+    /**
+     * @param \StaticServer\Modifier\GenericModifyInterface $modify
+     */
+    public function setModifier(GenericModifyInterface $modify): void
+    {
+        $this->modify = $modify;
     }
 
     /**
@@ -78,7 +103,7 @@ final class HttpApplication
      */
     public function dryRun()
     {
-        $this->doLoadInTheMemory();
+        $this->makeReady();
         $this->registerOnStartListener();
         $this->registerOnRequestListener();
     }
@@ -88,11 +113,11 @@ final class HttpApplication
      */
     public function run()
     {
-        $this->doLoadInTheMemory();
+        $this->makeReady();
         $this->registerOnStartListener();
         $this->registerOnRequestListener();
 
-        $this->handler->start();
+        $this->server->start();
     }
 
     /**
@@ -107,7 +132,13 @@ final class HttpApplication
             SWOOLE_PROCESS
         );
 
-        $server->set($conf->get('server.swoole'));
+        $server->set(array_merge($conf->get('server.swoole'), [
+            # Latest version of swoole (2019-06-04) can't compress response output if present Accept-Encoding header.
+            # Doesn't work any method: gzip, br.
+            'http_compression' => false,
+            'http_compression_level' => 0,
+            'worker_num' => 4,
+        ]));
 
         return $server;
     }
@@ -117,113 +148,45 @@ final class HttpApplication
      */
     private function registerOnStartListener(): void
     {
-        $this->handler->on('start', function ($server) {
+        $this->server->on('start', function ($server) {
             $this->logger->info(sprintf('HTTP static server started at %s:%s', $server->host, $server->port));
         });
     }
 
     /**
+     * Registers handler to process client requests.
+     *
      * @return void
      */
     private function registerOnRequestListener(): void
     {
-        $headers = $this->getHeadersValues();
+        $this->server->on('request', function (Request $request, Response $response) {
+            // Send secure headers to client
+            $this->header->sent($response);
 
-        $this->handler->on('request', function (Request $request, Response $response) use ($headers) {
-            $uri = $request->server['request_uri'];
+            // It will be processed the requests of clients (SPA-preferred)
+            // from memory.
+            $body = '';
+            $this->processor->process($body, $request, $response);
 
-            $response->header('Expires', $headers['expires']);
-            $response->header('Pragma', $headers['pragma']);
-            $response->header('Cache-Control', $headers['cache_control']);
-
-            $response->header('software-server', '');
-            $response->header('server', '');
-            $response->header('x-xss-protection', '1; mode=block');
-            $response->header('x-frame-options', $headers['frame_options']);
-            $response->header('x-content-type', 'nosniff');
-            $response->header('X-Content-Type-Options', 'nosniff');
-            $response->header('X-UA-Compatible', 'IE=edge');
-            $response->header('Referrer-Policy', $headers['referer_policy']);
-            $response->header('Feature-Policy', $headers['feature_policy']);
-            $response->header('content-security-policy', $headers['csp']);
-            $response->header('strict-transport-security', 'max-age=31536000; includeSubDomains; preload');
-
-//            foreach ($this->middleware as $middleware) {
-//                $middleware->process($request, $response);
-//            }
-
-            // if passed URI is file from fs, return it.
-            if (isset(self::$files[$uri])) {
-                $response->header('Content-Type', self::$mimes[$uri] . '; charset=utf-8');
-                $response->end(self::$files[$uri]);
-                // if file not found in memory and it has extension, return 404
-            } elseif (pathinfo($uri, PATHINFO_EXTENSION)) {
-                $response->status(404);
-                $response->end('404 not found');
-            } else {
-                // otherwise to forward the request to index file to handle it within javascript router.
-                $response->header('Content-Type', self::$mimes['/'] . '; charset=utf-8');
-                $response->end(self::$files['/']);
-            }
+            // It will be compressed output response if accept-encoding header
+            // are present.
+            $this->compress->handle($body, $request, $response);
+            $response->end($body);
         });
     }
 
     /**
-     * @return array
-     */
-    private function getHeadersValues(): array
-    {
-        $template = [
-            '{{next_year}}' => (int) date('Y') + 1,
-        ];
-
-        $k = array_keys($template);
-        $v = array_values($template);
-
-        $array = [];
-        foreach ($this->conf->get('server.headers', []) as $header => $value) {
-            $array[$header] = join(';', (array) str_replace($k, $v, $value));
-        }
-
-        return $array;
-    }
-
-    /**
-     * Load all static files in the memory.
+     * Prepare server to run.
      *
      * @return void
      */
-    private function doLoadInTheMemory(): void
+    private function makeReady(): void
     {
-        $root = $this->getRootPath();
-        $generator = $this->walker->walk($root);
+        $files = $this->iterator->iterate();
 
-        /** @var \StaticServer\Transfer $item */
-        foreach ($generator as $item) {
-            $key = substr($item->getRealpath(), strlen($root));
-            self::$files[$key] = $item->getContent();
-            self::$mimes[$key] = $this->conf->get('server.mimes.' . $item->getExtension(), 'text/plain');
-
-            // Default page.
-            if ($item->getFilename() === $this->conf->get('server.index')) {
-                self::$files['/'] = $item->getContent();
-                self::$mimes['/'] = $this->conf->get('server.mimes.html');
-            }
-        }
-    }
-
-    /**
-     * @return string
-     */
-    private function getRootPath(): string
-    {
-        $root = realpath($this->conf->get('server.root'));
-
-        // If it exist, check if it's a directory
-        if($root !== false && is_dir($root)) {
-            return $root;
-        }
-
-        throw new InvalidArgumentException('Root server directory not found or it is not directory.');
+        $this->processor->load(
+            $this->modify->modify($files)
+        );
     }
 }
