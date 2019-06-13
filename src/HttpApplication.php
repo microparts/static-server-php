@@ -5,7 +5,6 @@ namespace StaticServer;
 use Microparts\Configuration\ConfigurationInterface;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\NullLogger;
-use StaticServer\Compression\Compress;
 use StaticServer\Iterator\IteratorInterface;
 use StaticServer\Iterator\RecursiveIterator;
 use StaticServer\Modifier\GenericModifyInterface;
@@ -29,11 +28,6 @@ final class HttpApplication
      * @var Server
      */
     private $server;
-
-    /**
-     * @var \StaticServer\Compression\Compress
-     */
-    private $compress;
 
     /**
      * @var \StaticServer\Header
@@ -65,7 +59,6 @@ final class HttpApplication
         $this->server = $this->createServer($conf);
         $this->conf   = $conf;
 
-        $this->compress = new Compress($conf);
         $this->header   = new Header($conf);
 
         $this->setLogger(new NullLogger());
