@@ -31,6 +31,11 @@ final class Compress
     private static $extensions = [];
 
     /**
+     * @var array
+     */
+    private static $compressed = [];
+
+    /**
      * Compress constructor.
      *
      * @param \Microparts\Configuration\ConfigurationInterface $conf
@@ -58,7 +63,7 @@ final class Compress
         if ($this->conf->get('server.compression.enabled') && $accept && isset(self::$extensions[$ext])) {
             $method = $this->parseHeader($accept);
             $response->header('Content-Encoding', $method);
-            $body = self::$objects[$method]->compress($body);
+            $this->compressOrNot($uri, $method, $body);
         }
     }
 
@@ -102,5 +107,21 @@ final class Compress
         }
 
         return self::$accept[$header];
+    }
+
+    /**
+     * @param string $uri
+     * @param string $method
+     * @param string $body
+     *
+     * @return void
+     */
+    private function compressOrNot(string $uri, string $method, string & $body): void
+    {
+        if (isset(self::$compressed[$uri])) {
+            $body = self::$compressed[$uri];
+        } else {
+            $body = self::$compressed[$uri] = self::$objects[$method]->compress($body);
+        }
     }
 }
