@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "1445416867dcbbc699852f0b735be186",
+    "content-hash": "f3c0e8684c1de1bbc542ba392bed9c47",
     "packages": [
         {
             "name": "masterminds/html5",
@@ -2514,7 +2514,8 @@
     "platform": {
         "ext-json": "*",
         "ext-dom": "*",
-        "ext-zlib": "*"
+        "ext-zlib": "*",
+        "ext-brotli": "*"
     },
     "platform-dev": []
 }
