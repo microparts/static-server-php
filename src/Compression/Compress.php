@@ -16,7 +16,19 @@ final class Compress
     /**
      * @var array
      */
-    private $algorithms;
+    private static $objects = [];
+
+    /**
+     * @var array
+     */
+    private static $accept = [];
+
+    /**
+     * Allowed extensions to compress.
+     *
+     * @var array
+     */
+    private static $extensions = [];
 
     /**
      * Compress constructor.
@@ -27,33 +39,68 @@ final class Compress
     {
         $this->conf = $conf;
 
-        foreach ($this->conf->get('server.compression.algorithms') as $algorithm) {
-            $this->algorithms[] = [$algorithm['method'], CompressionFactory::create(
-                $algorithm['method'],
-                $algorithm['level']
-            )];
-        }
+        $this->preInitializationCompressionObjects();
+        $this->preInitializationAllowedExtensions();
     }
 
     /**
      * @param string $body
+     * @param array $cached
      * @param \Swoole\Http\Request $request
      * @param \Swoole\Http\Response $response
      */
-    public function handle(string & $body, Request $request, Response $response): void
+    public function handle(string & $body, array & $cached, Request $request, Response $response): void
     {
+        $uri = $request->server['request_uri'];
         $accept = $request->header['accept-encoding'] ?? false;
+        $ext = $cached['extension'][$uri] ?? false;
 
-        if ($this->conf->get('server.compression.enabled') && $accept) {
-            $encoding = array_map('trim', explode(',', strtolower($accept)));
-            foreach ($this->algorithms as [$method, $algorithm]) {
-                /** @var \StaticServer\Compression\CompressionInterface $algorithm */
-                if (in_array($method, $encoding, true)) {
-                    $response->header('Content-Encoding', $method);
-                    $body = $algorithm->compress($body);
-                    break;
-                }
+        if ($this->conf->get('server.compression.enabled') && $accept && isset(self::$extensions[$ext])) {
+            $method = $this->parseHeader($accept);
+            $response->header('Content-Encoding', $method);
+            $body = self::$objects[$method]->compress($body);
+        }
+    }
+
+    /**
+     * Pre init compression objects.
+     */
+    private function preInitializationCompressionObjects(): void
+    {
+        foreach ($this->conf->get('server.compression.algorithms') as $algorithm) {
+            self::$objects[$algorithm['method']] = CompressionFactory::create($algorithm['method'], $algorithm['level']);
+        }
+    }
+
+    /**
+     * Pre init allowed extensions.
+     */
+    private function preInitializationAllowedExtensions(): void
+    {
+        self::$extensions = array_fill_keys($this->conf->get('server.compression.extensions'), true);
+    }
+
+    /**
+     * Return once-parsed encoding.
+     *
+     * @param string $header
+     * @return string
+     */
+    private function parseHeader(string $header): string
+    {
+        if (isset(self::$accept[$header])) {
+            return self::$accept[$header];
+        }
+
+        $enc = array_map('trim', explode(',', strtolower($header)));
+
+        foreach ($this->conf->get('server.compression.algorithms') as $algorithm) {
+            if (in_array($algorithm['method'], $enc, true)) {
+                self::$accept[$header] = $algorithm['method'];
+                break;
             }
         }
+
+        return self::$accept[$header];
     }
 }

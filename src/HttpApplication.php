@@ -169,9 +169,6 @@ final class HttpApplication
             $body = '';
             $this->processor->process($body, $request, $response);
 
-            // It will be compressed output response if accept-encoding header
-            // are present.
-            $this->compress->handle($body, $request, $response);
             $response->end($body);
         });
     }
