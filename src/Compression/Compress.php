@@ -61,7 +61,8 @@ final class Compress
         $ext = $cached['extension'][$uri] ?? false;
 
         if ($this->conf->get('server.compression.enabled') && $accept && isset(self::$extensions[$ext])) {
-            $method = $this->parseHeader($accept);
+            $method = '';
+            $this->parseHeader($accept, $method);
             $response->header('Content-Encoding', $method);
             $this->compressOrNot($uri, $method, $body);
         }
@@ -87,26 +88,28 @@ final class Compress
 
     /**
      * Return once-parsed encoding.
+     * Specially without blocking return operation.
      *
      * @param string $header
-     * @return string
+     * @param string $method
+     * @return void
      */
-    private function parseHeader(string $header): string
+    private function parseHeader(string $header, string & $method): void
     {
         if (isset(self::$accept[$header])) {
-            return self::$accept[$header];
-        }
+            $method = self::$accept[$header];
+        } else {
+            $enc = array_map('trim', explode(',', strtolower($header)));
 
-        $enc = array_map('trim', explode(',', strtolower($header)));
-
-        foreach ($this->conf->get('server.compression.algorithms') as $algorithm) {
-            if (in_array($algorithm['method'], $enc, true)) {
-                self::$accept[$header] = $algorithm['method'];
-                break;
+            foreach ($this->conf->get('server.compression.algorithms') as $algorithm) {
+                if (in_array($algorithm['method'], $enc, true)) {
+                    self::$accept[$header] = $algorithm['method'];
+                    break;
+                }
             }
-        }
 
-        return self::$accept[$header];
+            $method = self::$accept[$header] ?? 'gzip'; // fallback if header broken
+        }
     }
 
     /**
@@ -118,10 +121,10 @@ final class Compress
      */
     private function compressOrNot(string $uri, string $method, string & $body): void
     {
-        if (isset(self::$compressed[$uri])) {
-            $body = self::$compressed[$uri];
+        if (isset(self::$compressed[$method][$uri])) {
+            $body = self::$compressed[$method][$uri];
         } else {
-            $body = self::$compressed[$uri] = self::$objects[$method]->compress($body);
+            $body = self::$compressed[$method][$uri] = self::$objects[$method]->compress($body);
         }
     }
 }

@@ -115,41 +115,19 @@ final class InjectConfigFileToIndexModify implements ModifyInterface
      */
     private function beforeFirstScript(DOMDocument $dom, DOMElement $script, Transfer $changed): Transfer
     {
-        $body = $dom->getElementsByTagName('body');
+        $scripts = $dom->getElementsByTagName('script');
 
-        if ($body->length < 1) {
+        if ($scripts->length < 1) {
             return $changed;
         }
 
-        $first = $this->findScriptTagInNestedNodes($body->item(0)->childNodes);
-
-        if ($first !== null) {
-            $first->parentNode->insertBefore($script, $first);
-        } else {
-            return $changed;
-        }
+        $first = $scripts->item(0);
+        $first->parentNode->insertBefore($script, $first);
 
         $changed->setContent(
             $this->html5->saveHTML($dom)
         );
 
         return $changed;
-    }
-
-    /**
-     * @param \DOMNodeList $list
-     * @return \DOMElement|null
-     */
-    private function findScriptTagInNestedNodes(DOMNodeList $list)
-    {
-        foreach ($list as $node) {
-            if ($node->nodeName === 'script') {
-                return $node;
-            } elseif ($node->childNodes !== null && $node->childNodes->length > 0) {
-                return $this->findScriptTagInNestedNodes($node->childNodes);
-            }
-        }
-
-        return null;
     }
 }

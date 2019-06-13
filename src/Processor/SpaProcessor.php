@@ -85,7 +85,7 @@ final class SpaProcessor implements ProcessorInterface
             $body = '404 not found';
         } else {
             // otherwise to forward the request to index file to handle it within javascript router.
-            $response->header('Content-Type', self::$cached['files']['/'] . '; charset=utf-8');
+            $response->header('Content-Type', self::$cached['mimes']['/'] . '; charset=utf-8');
             $body = self::$cached['files']['/'];
         }
 
