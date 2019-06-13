@@ -67,10 +67,8 @@ final class PrepareConfigModify implements ModifyInterface
             $this->vcsSha1
         );
 
-//        $contents = preg_replace('/\s+/', '', );
-
         return sprintf(
-            $transfer->getContent(),
+            trim($transfer->getContent()),
             $this->stage,
             json_encode($this->cleanupServerKeyFromConfig()),
             $this->vcsSha1,
