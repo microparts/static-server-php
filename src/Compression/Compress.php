@@ -9,16 +9,22 @@ use Swoole\Http\Response;
 final class Compress
 {
     /**
+     * Configuration object.
+     *
      * @var \Microparts\Configuration\ConfigurationInterface
      */
     private $conf;
 
     /**
+     * Pre-loaded objects to compress data to any format.
+     *
      * @var array
      */
     private static $objects = [];
 
     /**
+     * Cache for once parsed header.
+     *
      * @var array
      */
     private static $accept = [];
@@ -31,12 +37,15 @@ final class Compress
     private static $extensions = [];
 
     /**
+     * Cache for once compressed contents.
+     *
      * @var array
      */
     private static $compressed = [];
 
     /**
-     * Compress constructor.
+     * Compress constructor with prior initialization
+     * before requests handling.
      *
      * @param \Microparts\Configuration\ConfigurationInterface $conf
      */
@@ -49,16 +58,21 @@ final class Compress
     }
 
     /**
+     * Handle compression of loaded contents to server cache.
+     * Specially without blocking return operation.
+     *
      * @param string $body
      * @param array $cached
      * @param \Swoole\Http\Request $request
      * @param \Swoole\Http\Response $response
+     *
+     * @return void
      */
     public function handle(string & $body, array & $cached, Request $request, Response $response): void
     {
-        $uri = $request->server['request_uri'];
+        $uri    = $request->server['request_uri'];
         $accept = $request->header['accept-encoding'] ?? false;
-        $ext = $cached['extension'][$uri] ?? false;
+        $ext    = $cached['extension'][$uri] ?? false;
 
         if ($this->conf->get('server.compression.enabled') && $accept && isset(self::$extensions[$ext])) {
             $method = '';
@@ -70,6 +84,8 @@ final class Compress
 
     /**
      * Pre init compression objects.
+     *
+     * @return void
      */
     private function preInitializationCompressionObjects(): void
     {
@@ -80,6 +96,8 @@ final class Compress
 
     /**
      * Pre init allowed extensions.
+     *
+     * @return void
      */
     private function preInitializationAllowedExtensions(): void
     {
@@ -92,6 +110,7 @@ final class Compress
      *
      * @param string $header
      * @param string $method
+     *
      * @return void
      */
     private function parseHeader(string $header, string & $method): void
@@ -108,11 +127,15 @@ final class Compress
                 }
             }
 
-            $method = self::$accept[$header] ?? 'gzip'; // fallback if header broken
+            // matches header or uses fallback if it broken
+            $method = self::$accept[$header] ?? $this->conf->get('server.compression.fallback');
         }
     }
 
     /**
+     * Return once-compressed contents.
+     * Specially without blocking return operation.
+     *
      * @param string $uri
      * @param string $method
      * @param string $body

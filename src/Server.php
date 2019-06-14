@@ -83,7 +83,7 @@ final class Server
     /**
      * @return \StaticServer\Server
      */
-    public static function new()
+    public static function new(): self
     {
         $stage = getenv('STAGE') ?: 'defaults';
         $sha1  = getenv('VCS_SHA1') ?: '';
@@ -95,7 +95,7 @@ final class Server
     /**
      * @return \StaticServer\Server
      */
-    public static function silent()
+    public static function silent(): self
     {
         $stage = getenv('STAGE') ?: 'defaults';
         $sha1  = getenv('VCS_SHA1') ?: '';
@@ -109,8 +109,10 @@ final class Server
      *
      * @param bool $modify
      * @param bool $dryRun
+     *
+     * @return void
      */
-    public function run(bool $modify = true, bool $dryRun = false)
+    public function run(bool $modify = true, bool $dryRun = false): void
     {
         if ($modify) {
             $location = $this->getConfigName('/__config.js');
@@ -122,7 +124,7 @@ final class Server
             $mod = new NullModify();
         }
 
-        $http = new HttpApplication($this->conf);
+        $http = new HttpApplication($this->conf, $this->stage, $this->sha1);
         $http->setLogger($this->logger);
         $http->setModifier($mod);
 
@@ -158,6 +160,7 @@ final class Server
 
     /**
      * @param string $location
+     *
      * @return string
      */
     private function getConfigName(string $location): string

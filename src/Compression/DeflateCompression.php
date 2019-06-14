@@ -2,10 +2,12 @@
 
 namespace StaticServer\Compression;
 
-
 final class DeflateCompression implements CompressionInterface
 {
     /**
+     * Compression level.
+     * From 1 to 9.
+     *
      * @var int
      */
     private $level;
@@ -24,7 +26,8 @@ final class DeflateCompression implements CompressionInterface
      * Compress data.
      *
      * @param string $data
-     * @return mixed
+     *
+     * @return string
      */
     public function compress(string $data): string
     {

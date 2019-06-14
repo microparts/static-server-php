@@ -4,7 +4,6 @@ namespace StaticServer\Modifier;
 
 use DOMDocument;
 use DOMElement;
-use DOMNodeList;
 use InvalidArgumentException;
 use Masterminds\HTML5;
 use Microparts\Configuration\ConfigurationInterface;
@@ -12,7 +11,16 @@ use StaticServer\Transfer;
 
 final class InjectConfigFileToIndexModify implements ModifyInterface
 {
+    /**
+     * Injects the __config.js to top of <head> tag.
+     * It will be block content rendering, so not recommended.
+     */
     private const INJECT_TO_HEAD = 'head';
+
+    /**
+     * Injects the __config.js before first <script> tag in DOM document.
+     * Better than `head` variant.
+     */
     private const INJECT_BEFORE_SCRIPT = 'before_script';
 
     /**
@@ -21,11 +29,15 @@ final class InjectConfigFileToIndexModify implements ModifyInterface
     private $conf;
 
     /**
+     * Server location of __config.js file.
+     *
      * @var string
      */
     private $location;
 
     /**
+     * Utility to parse and modify html code.
+     *
      * @var \Masterminds\HTML5
      */
     private $html5;
@@ -44,8 +56,13 @@ final class InjectConfigFileToIndexModify implements ModifyInterface
     }
 
     /**
+     * If index.html (server.index) will be found from array of files,
+     * it parse DOM document with two strategies: `head` and `before_script`.
+     * See constants to learn more.
+     *
      * @param \StaticServer\Transfer $changed
      * @param \StaticServer\Transfer $origin
+     *
      * @return \StaticServer\Transfer
      */
     public function __invoke(Transfer $changed, Transfer $origin): Transfer
@@ -66,13 +83,21 @@ final class InjectConfigFileToIndexModify implements ModifyInterface
             return $this->beforeFirstScript($dom, $script, $changed);
         }
 
-        throw new InvalidArgumentException('Config.inject must be [head] or [before_script] value.');
+        throw new InvalidArgumentException('For config.inject possible two values [head] and [before_script], please choose one.');
     }
 
     /**
+     * Updates this file, where $changed object may be contains changes
+     * from previous Modifier and where $origin object contains first
+     * state of original file.
+     *
+     * Injects the __config.js to top of <head> tag.
+     * If <head> tag not found injecting will be skipped.
+     *
      * @param \DOMDocument $dom
      * @param \DOMElement $script
      * @param \StaticServer\Transfer $changed
+     *
      * @return \StaticServer\Transfer
      */
     private function toTopOfHead(DOMDocument $dom, DOMElement $script, Transfer $changed): Transfer
@@ -108,15 +133,19 @@ final class InjectConfigFileToIndexModify implements ModifyInterface
     }
 
     /**
+     * Injects the __config.js before first <script> tag in DOM document.
+     *
      * @param \DOMDocument $dom
      * @param \DOMElement $script
      * @param \StaticServer\Transfer $changed
+     *
      * @return \StaticServer\Transfer
      */
     private function beforeFirstScript(DOMDocument $dom, DOMElement $script, Transfer $changed): Transfer
     {
         $scripts = $dom->getElementsByTagName('script');
 
+        // If can't found any <script> tag, we will skip injecting.
         if ($scripts->length < 1) {
             return $changed;
         }

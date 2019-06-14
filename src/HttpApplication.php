@@ -30,6 +30,8 @@ final class HttpApplication
     private $server;
 
     /**
+     * Object to sent default headers.
+     *
      * @var \StaticServer\Header
      */
     private $header;
@@ -50,17 +52,32 @@ final class HttpApplication
     private $modify;
 
     /**
+     * @var string
+     */
+    private $stage;
+
+    /**
+     * @var string
+     */
+    private $sha1;
+
+    /**
      * HttpApplication constructor.
      *
      * @param \Microparts\Configuration\ConfigurationInterface $conf
+     * @param string $stage
+     * @param string $sha1
      */
-    public function __construct(ConfigurationInterface $conf)
+    public function __construct(ConfigurationInterface $conf, string $stage = '', string $sha1 = '')
     {
         $this->server = $this->createServer($conf);
         $this->conf   = $conf;
+        $this->stage  = $stage;
+        $this->sha1   = $sha1;
 
-        $this->header   = new Header($conf);
+        $this->header = new Header($conf);
 
+        // disable logs and modifiers by default
         $this->setLogger(new NullLogger());
         $this->setModifier(new NullModify());
         $this->setProcessor(new SpaProcessor($conf));
@@ -68,7 +85,11 @@ final class HttpApplication
     }
 
     /**
+     * Processor to process incoming request with defined logic.
+     *
      * @param \StaticServer\Processor\ProcessorInterface $processor
+     *
+     * @return void
      */
     public function setProcessor(ProcessorInterface $processor): void
     {
@@ -76,7 +97,11 @@ final class HttpApplication
     }
 
     /**
+     * Iterator to iterate files in server.root.
+     *
      * @param \StaticServer\Iterator\IteratorInterface $iterator
+     *
+     * @return void
      */
     public function setIterator(IteratorInterface $iterator): void
     {
@@ -84,7 +109,11 @@ final class HttpApplication
     }
 
     /**
+     * Modifier for modify incoming files or add new one.
+     *
      * @param \StaticServer\Modifier\GenericModifyInterface $modify
+     *
+     * @return void
      */
     public function setModifier(GenericModifyInterface $modify): void
     {
@@ -93,8 +122,10 @@ final class HttpApplication
 
     /**
      * Dry run without start of server.
+     *
+     * @return void
      */
-    public function dryRun()
+    public function dryRun(): void
     {
         $this->makeReady();
         $this->registerOnStartListener();
@@ -103,8 +134,10 @@ final class HttpApplication
 
     /**
      * Run server.
+     *
+     * @return void
      */
-    public function run()
+    public function run(): void
     {
         $this->makeReady();
         $this->registerOnStartListener();
@@ -115,6 +148,7 @@ final class HttpApplication
 
     /**
      * @param \Microparts\Configuration\ConfigurationInterface $conf
+     *
      * @return \Swoole\Http\Server
      */
     private function createServer(ConfigurationInterface $conf): Server
@@ -125,13 +159,18 @@ final class HttpApplication
             SWOOLE_PROCESS
         );
 
-        $server->set(array_merge($conf->get('server.swoole'), [
+        // swoole compression disabled and it not possible to override.
+        $compress = [
             # Latest version of swoole (2019-06-04) can't compress response output if present Accept-Encoding header.
             # Doesn't work any method: gzip, br.
             'http_compression' => false,
             'http_compression_level' => 0,
-            'worker_num' => 4,
-        ]));
+        ];
+
+        $server->set(array_merge(
+            ['worker_num' => 4], // should be possible to override worker_num parameter from server config.
+            array_merge($conf->get('server.swoole'), $compress)
+        ));
 
         return $server;
     }
@@ -142,6 +181,7 @@ final class HttpApplication
     private function registerOnStartListener(): void
     {
         $this->server->on('start', function ($server) {
+            $this->logger->info(sprintf('Application state is: STAGE=%s SHA1=%s', $this->stage, $this->sha1));
             $this->logger->info(sprintf('HTTP static server started at %s:%s', $server->host, $server->port));
         });
     }

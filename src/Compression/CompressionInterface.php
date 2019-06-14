@@ -1,13 +1,6 @@
-<?php
-/**
- * Created by Roquie.
- * E-mail: roquie0@gmail.com
- * GitHub: Roquie
- * Date: 2019-06-04
- */
+<?php declare(strict_types=1);
 
 namespace StaticServer\Compression;
-
 
 interface CompressionInterface
 {
@@ -15,7 +8,8 @@ interface CompressionInterface
      * Compress data.
      *
      * @param string $data
-     * @return mixed
+     *
+     * @return string
      */
     public function compress(string $data): string;
 }

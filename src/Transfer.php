@@ -49,6 +49,8 @@ final class Transfer
 
     /**
      * @param string $filename
+     *
+     * @return void
      */
     public function setFilename(string $filename): void
     {
@@ -57,6 +59,8 @@ final class Transfer
 
     /**
      * @param string $content
+     *
+     * @return void
      */
     public function setContent(string $content): void
     {
@@ -65,6 +69,8 @@ final class Transfer
 
     /**
      * @param string $extension
+     *
+     * @return void
      */
     public function setExtension(string $extension): void
     {
@@ -73,6 +79,8 @@ final class Transfer
 
     /**
      * @param string $realpath
+     *
+     * @return void
      */
     public function setRealpath(string $realpath): void
     {
@@ -81,6 +89,8 @@ final class Transfer
 
     /**
      * @param string $location
+     *
+     * @return void
      */
     public function setLocation(string $location): void
     {
@@ -89,6 +99,8 @@ final class Transfer
 
     /**
      * @return string
+     *
+     * @return void
      */
     public function getFilename(): string
     {

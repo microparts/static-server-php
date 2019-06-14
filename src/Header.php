@@ -30,6 +30,8 @@ final class Header
     private $conf;
 
     /**
+     * Prepared headers to sent.
+     *
      * @var array
      */
     private $prepared = [];
@@ -47,7 +49,9 @@ final class Header
     }
 
     /**
-     * Prepare headers before request.
+     * Prepare headers before handling requests.
+     *
+     * @return void
      */
     private function prepareBeforeRequest(): void
     {
@@ -57,7 +61,11 @@ final class Header
     }
 
     /**
+     * Sent prepared headers.
+     *
      * @param \Swoole\Http\Response $response
+     *
+     * @return void
      */
     public function sent(Response $response): void
     {

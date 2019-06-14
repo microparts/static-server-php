@@ -34,6 +34,8 @@ final class RecursiveIterator implements IteratorInterface
     }
 
     /**
+     * Iterate files in server.root.
+     *
      * @return iterable
      */
     public function iterate(): iterable
@@ -69,6 +71,8 @@ final class RecursiveIterator implements IteratorInterface
     }
 
     /**
+     * Check if server.root is exists and get realpath.
+     *
      * @return string
      */
     private function getRootPath(): string

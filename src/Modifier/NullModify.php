@@ -5,7 +5,10 @@ namespace StaticServer\Modifier;
 final class NullModify implements GenericModifyInterface
 {
     /**
+     * Nothing to modify if modifier not set up.
+     *
      * @param iterable $files
+     *
      * @return iterable
      */
     public function modify(iterable $files): iterable

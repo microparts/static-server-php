@@ -10,7 +10,9 @@ use Swoole\Http\Response;
 final class SpaProcessor implements ProcessorInterface
 {
     /**
-     * Cached files.
+     * Cached files, mimes, extensions.
+     *
+     * $cached['mimes']['/js/app.js'] = 'application/javascript';
      *
      * @var array
      */
@@ -26,6 +28,9 @@ final class SpaProcessor implements ProcessorInterface
     private $conf;
 
     /**
+     * Object who responsible to compress outputs data.
+     * It should be uses in Processor because needs loaded cache.
+     *
      * @var \StaticServer\Compression\Compress
      */
     private $compress;
@@ -45,6 +50,8 @@ final class SpaProcessor implements ProcessorInterface
      * Load to memory modified files.
      *
      * @param iterable $files
+     *
+     * @return void
      */
     public function load(iterable $files): void
     {
@@ -66,9 +73,13 @@ final class SpaProcessor implements ProcessorInterface
     }
 
     /**
+     * Processes incoming request with defined logic.
+     * Specially without blocking return operation.
+     *
      * @param string $body
      * @param \Swoole\Http\Request $request
      * @param \Swoole\Http\Response $response
+     *
      * @return void
      */
     public function process(string & $body, Request $request, Response $response): void

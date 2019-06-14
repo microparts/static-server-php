@@ -7,9 +7,14 @@ use StaticServer\Transfer;
 interface ModifyInterface
 {
     /**
-     * @param \StaticServer\Transfer $changed
-     * @param \StaticServer\Transfer $origin
-     * @return \StaticServer\Transfer
+     * Updates this file, where $changed object may be contains changes
+     * from previous Modifier and where $origin object contains first
+     * state of original file.
+     *
+     * @param Transfer $changed
+     * @param Transfer $origin
+     *
+     * @return Transfer
      */
     public function __invoke(Transfer $changed, Transfer $origin): Transfer;
 }

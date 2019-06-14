@@ -13,12 +13,14 @@ final class Modify implements GenericModifyInterface
     private $modifiers = [];
 
     /**
-     * @var SplFileInfo[]
+     * @var Transfer[]
      */
     private $ghosts = [];
 
     /**
      * @param $handler
+     *
+     * @return void
      */
     public function addModifier(ModifyInterface $handler): void
     {
@@ -31,6 +33,8 @@ final class Modify implements GenericModifyInterface
      *
      * @param string $path
      * @param string $location
+     *
+     * @return void
      */
     public function addGhostFile(string $path, string $location): void
     {
@@ -49,7 +53,7 @@ final class Modify implements GenericModifyInterface
     /**
      * @return array
      */
-    public function getModifiers()
+    public function getModifiers(): array
     {
         return $this->modifiers;
     }
