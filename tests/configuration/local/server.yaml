@@ -1,4 +1,0 @@
-local:
-  server:
-    port: 8081
-    root: ./dist

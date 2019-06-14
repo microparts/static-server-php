@@ -1,0 +1,4 @@
+tests:
+  server:
+    port: 8081
+    root: ./tests/example_dist/vue

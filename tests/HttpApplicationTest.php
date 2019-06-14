@@ -9,8 +9,12 @@ class HttpApplicationTest extends TestCase
 {
     public function testInit()
     {
+        $path = __DIR__ . '/../tests/configuration';
+
         try {
-            Server::silent()->run(true);
+            putenv('STAGE=tests');
+            putenv("CONFIG_PATH=$path");
+            Server::silent()->dryRun();
         } catch (Throwable $e) {
             printf($e);
             $this->assertFalse((bool) $e);

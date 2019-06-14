@@ -1,0 +1,6 @@
+tests_inject_head:
+  server:
+    config:
+      inject: head
+    port: 8081
+    root: ./tests/example_dist/vue

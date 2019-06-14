@@ -132,6 +132,16 @@ final class Server
     }
 
     /**
+     * DryRun.
+     *
+     * @param bool $modify
+     */
+    public function dryRun(bool $modify = true): void
+    {
+        $this->run($modify, true);
+    }
+
+    /**
      * For debug only.
      *
      * @return string
