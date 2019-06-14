@@ -86,8 +86,11 @@ final class SpaProcessor implements ProcessorInterface
     {
         $uri = $request->server['request_uri'];
 
-        // if passed URI is file from fs, return it.
-        if (isset(self::$cached['files'][$uri])) {
+        if ($uri === '/healthcheck') {
+            $response->header('Content-Type', 'text/plain; charset=utf-8');
+            $body = 'ok';
+            // if passed URI is file from fs, return it.
+        } elseif (isset(self::$cached['files'][$uri])) {
             $response->header('Content-Type', self::$cached['mimes'][$uri] . '; charset=utf-8');
             $body = self::$cached['files'][$uri];
             // if file not found in memory and it has extension, return 404
