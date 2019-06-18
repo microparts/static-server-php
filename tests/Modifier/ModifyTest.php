@@ -28,7 +28,5 @@ class ModifyTest extends TestCase
         $this->assertInstanceOf(ModifyInterface::class, $m->getModifiers()[0]);
         $this->assertEquals('ModifyTest.php', $array[0]->getFilename());
         $this->assertEquals(file_get_contents(__FILE__), $array[0]->getContent());
-        $this->assertEquals('bla-bla.txt', $array[1]->getFilename());
-        $this->assertEquals('file.txt', $array[2]->getFilename());
     }
 }

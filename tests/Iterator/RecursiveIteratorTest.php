@@ -19,15 +19,21 @@ class RecursiveIteratorTest extends TestCase
         $conf->load();
 
         $it = new RecursiveIterator($conf, new NullLogger());
-        /** @var Transfer[] $array */
-        $array = iterator_to_array($it->iterate());
 
-        $this->assertInstanceOf(Transfer::class, $array[0]);
-        $this->assertEquals('bla-bla.txt', $array[0]->getFilename());
-        $this->assertEquals('txt', $array[0]->getExtension());
-        $this->assertEquals(realpath($file), $array[0]->getRealpath());
-        $this->assertEquals('/nested/bla-bla.txt', $array[0]->getLocation());
-        $this->assertEquals(file_get_contents($file), $array[0]->getContent());
+        $transfer = null;
+        foreach ($it->iterate() as $item) {
+            /** @var Transfer $item */
+            $this->assertInstanceOf(Transfer::class, $item);
+            if ($item->getFilename() === 'bla-bla.txt') {
+                $transfer = $item;
+                break;
+            }
+        }
+
+        $this->assertEquals('txt', $transfer->getExtension());
+        $this->assertEquals(realpath($file), $transfer->getRealpath());
+        $this->assertEquals('/nested/bla-bla.txt', $transfer->getLocation());
+        $this->assertEquals(file_get_contents($file), $transfer->getContent());
     }
 
     public function testHowRecursiveIteratorNotFoundTheFiles()
