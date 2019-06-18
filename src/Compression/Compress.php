@@ -115,7 +115,9 @@ final class Compress
      */
     private function parseHeader(string $header, string & $method): void
     {
-        if (isset(self::$accept[$header])) {
+        if ($header === '*') {
+            $method = 'br';
+        } elseif (isset(self::$accept[$header])) {
             $method = self::$accept[$header];
         } else {
             $enc = array_map('trim', explode(',', strtolower($header)));

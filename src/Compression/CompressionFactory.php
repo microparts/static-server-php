@@ -20,7 +20,7 @@ final class CompressionFactory
             case 'gzip':
                 return new GzipCompression($level);
             case 'deflate':
-                return new BrotliCompression($level);
+                return new DeflateCompression($level);
             default:
                 return new GzipCompression($level);
         }

@@ -2,17 +2,21 @@
 
 namespace StaticServer\Modifier;
 
-final class NullModify implements GenericModifyInterface
+use StaticServer\Transfer;
+
+class NullModify implements ModifyInterface
 {
     /**
-     * Nothing to modify if modifier not set up.
+     * Updates this file, where $changed object may be contains changes
+     * from previous Modifier and where $origin object contains first
+     * state of original file.
      *
-     * @param iterable $files
-     *
-     * @return iterable
+     * @param Transfer $changed
+     * @param Transfer $origin
+     * @return Transfer
      */
-    public function modify(iterable $files): iterable
+    public function __invoke(Transfer $changed, Transfer $origin): Transfer
     {
-        yield from $files;
+        return $changed;
     }
 }

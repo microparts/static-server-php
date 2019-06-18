@@ -9,7 +9,7 @@ use Psr\Log\LogLevel;
 use Psr\Log\NullLogger;
 use StaticServer\Modifier\Modify;
 use StaticServer\Modifier\InjectConfigFileToIndexModify;
-use StaticServer\Modifier\NullModify;
+use StaticServer\Modifier\NullGenericModify;
 use StaticServer\Modifier\PrepareConfigModify;
 
 final class Server
@@ -117,11 +117,11 @@ final class Server
         if ($modify) {
             $location = $this->getConfigName('/__config.js');
             $mod = new Modify();
-            $mod->addGhostFile(__DIR__ . '/stub/__config.js', $location);
+            $mod->addTemplate(__DIR__ . '/stub/__config.js', $location);
             $mod->addModifier(new PrepareConfigModify($this->conf, $this->stage, $this->sha1));
             $mod->addModifier(new InjectConfigFileToIndexModify($this->conf, $location));
         } else {
-            $mod = new NullModify();
+            $mod = new NullGenericModify();
         }
 
         $http = new HttpApplication($this->conf, $this->stage, $this->sha1);
@@ -144,16 +144,16 @@ final class Server
     /**
      * For debug only.
      *
-     * @return string
+     * @return void
      */
-    public function dump(): string
+    public function dump(): void
     {
         printf("CONFIG_PATH = %s\n", $this->conf->getPath());
         printf("STAGE = %s\n", $this->getStage());
         printf("VCS_SHA1 = %s\n", $this->getSha1());
         printf("LOG_LEVEL = %s\n", $this->getLevel());
 
-        return $this->conf->dump();
+        printf('%s', $this->conf->dump());
     }
 
     /**

@@ -36,7 +36,7 @@ final class Modify implements GenericModifyInterface
      *
      * @return void
      */
-    public function addGhostFile(string $path, string $location): void
+    public function addTemplate(string $path, string $location): void
     {
         $file = new SplFileInfo($path);
         $contents = file_get_contents($file->getRealPath());
@@ -60,7 +60,7 @@ final class Modify implements GenericModifyInterface
 
     /**
      * @param iterable $files
-     * @return iterable
+     * @return iterable|\Traversable
      */
     public function modify(iterable $files): iterable
     {

@@ -66,6 +66,11 @@ final class SpaProcessor implements ProcessorInterface
                 self::$cached['files']['/'] = $item->getContent();
                 self::$cached['mimes']['/'] = $this->conf->get('server.mimes.html');
                 self::$cached['extension']['/'] = 'html';
+            } else {
+                // if index.html not provided.
+                self::$cached['files']['/'] = '';
+                self::$cached['mimes']['/'] = 'text/plain';
+                self::$cached['extension']['/'] = 'txt';
             }
         }
 

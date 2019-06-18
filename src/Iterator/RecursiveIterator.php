@@ -36,7 +36,7 @@ final class RecursiveIterator implements IteratorInterface
     /**
      * Iterate files in server.root.
      *
-     * @return iterable
+     * @return iterable|\Traversable
      */
     public function iterate(): iterable
     {

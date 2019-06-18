@@ -1,0 +1,4 @@
+not_found:
+  server:
+    port: 8081
+    root: ./not_found

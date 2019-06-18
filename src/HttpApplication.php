@@ -8,7 +8,7 @@ use Psr\Log\NullLogger;
 use StaticServer\Iterator\IteratorInterface;
 use StaticServer\Iterator\RecursiveIterator;
 use StaticServer\Modifier\GenericModifyInterface;
-use StaticServer\Modifier\NullModify;
+use StaticServer\Modifier\NullGenericModify;
 use StaticServer\Processor\ProcessorInterface;
 use StaticServer\Processor\SpaProcessor;
 use Swoole\Http\Request;
@@ -79,7 +79,7 @@ final class HttpApplication
 
         // disable logs and modifiers by default
         $this->setLogger(new NullLogger());
-        $this->setModifier(new NullModify());
+        $this->setModifier(new NullGenericModify());
         $this->setProcessor(new SpaProcessor($conf));
         $this->setIterator(new RecursiveIterator($conf, $this->logger));
     }
@@ -135,6 +135,7 @@ final class HttpApplication
     /**
      * Run server.
      *
+     * @codeCoverageIgnore
      * @return void
      */
     public function run(): void
@@ -153,6 +154,14 @@ final class HttpApplication
      */
     private function createServer(ConfigurationInterface $conf): Server
     {
+        static $server = null;
+
+        if (!is_null($server)) {
+            // To prevent error when sever called multiple times.
+            // Fatal error: Swoole\Server::__construct(): server is running. unable to create swoole_server
+            return $server;
+        }
+
         $server = new Server(
             $conf->get('server.host'),
             $conf->get('server.port'),
@@ -176,6 +185,7 @@ final class HttpApplication
     }
 
     /**
+     * @codeCoverageIgnore
      * @return void
      */
     private function registerOnStartListener(): void
@@ -189,6 +199,7 @@ final class HttpApplication
     /**
      * Registers handler to process client requests.
      *
+     * @codeCoverageIgnore
      * @return void
      */
     private function registerOnRequestListener(): void
