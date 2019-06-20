@@ -18,9 +18,9 @@ class SpaProcessorTest extends TestCase
         return [
             ['/foobar', file_get_contents(__FILE__)],
             ['/file.omg', '404 not found'],
-            ['/', CompressionFactory::create('br', 11)->compress('')],
+            ['/', CompressionFactory::create('br', 11)->compress('default index page')],
             ['/healthcheck', 'ok'],
-            ['/asd', ''],
+            ['/asd', 'default index page'],
         ];
     }
 

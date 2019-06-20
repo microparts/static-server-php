@@ -16,11 +16,7 @@ final class SpaProcessor implements ProcessorInterface
      *
      * @var array
      */
-    private static $cached = [
-        'mimes'     => [],
-        'files'     => [],
-        'extension' => [],
-    ];
+    private static $cached;
 
     /**
      * @var \Microparts\Configuration\ConfigurationInterface
@@ -44,6 +40,12 @@ final class SpaProcessor implements ProcessorInterface
     {
         $this->conf = $conf;
         $this->compress = new Compress($conf);
+
+        self::$cached = [
+            'mimes'     => [],
+            'files'     => [],
+            'extension' => [],
+        ];
     }
 
     /**
@@ -66,12 +68,14 @@ final class SpaProcessor implements ProcessorInterface
                 self::$cached['files']['/'] = $item->getContent();
                 self::$cached['mimes']['/'] = $this->conf->get('server.mimes.html');
                 self::$cached['extension']['/'] = 'html';
-            } else {
-                // if index.html not provided.
-                self::$cached['files']['/'] = '';
-                self::$cached['mimes']['/'] = 'text/plain';
-                self::$cached['extension']['/'] = 'txt';
             }
+        }
+
+        // if index.html not provided.
+        if (!isset(self::$cached['files']['/'])) {
+            self::$cached['files']['/'] = 'default index page';
+            self::$cached['mimes']['/'] = 'text/html';
+            self::$cached['extension']['/'] = 'html';
         }
 
         unset($files);
