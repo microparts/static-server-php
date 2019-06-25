@@ -62,6 +62,11 @@ final class HttpApplication
     private $sha1;
 
     /**
+     * @var float|int
+     */
+    private $cpuNum;
+
+    /**
      * HttpApplication constructor.
      *
      * @param \Microparts\Configuration\ConfigurationInterface $conf
@@ -74,6 +79,7 @@ final class HttpApplication
         $this->conf   = $conf;
         $this->stage  = $stage;
         $this->sha1   = $sha1;
+        $this->cpuNum = swoole_cpu_num() * 2;
 
         $this->header = new Header($conf);
 
@@ -177,7 +183,7 @@ final class HttpApplication
         ];
 
         $server->set(array_merge(
-            ['worker_num' => 4], // should be possible to override worker_num parameter from server config.
+            ['worker_num' => $this->cpuNum], // should be possible to override worker_num parameter from server config.
             array_merge($conf->get('server.swoole'), $compress)
         ));
 
@@ -191,7 +197,7 @@ final class HttpApplication
     private function registerOnStartListener(): void
     {
         $this->server->on('start', function ($server) {
-            $this->logger->info(sprintf('Application state is: STAGE=%s SHA1=%s', $this->stage, $this->sha1));
+            $this->logger->info(sprintf('Application state is: STAGE=%s SHA1=%s CPU=%s', $this->stage, $this->sha1, $this->cpuNum));
             $this->logger->info(sprintf('HTTP static server started at %s:%s', $server->host, $server->port));
         });
     }

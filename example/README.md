@@ -13,7 +13,7 @@ ARG STAGE
 RUN npm ci --silent \
     && npm run build
 
-FROM microparts/static-server-php:1.1.1
+FROM microparts/static-server-php:1.1.2
 
 COPY --from=0 /usr/app/dist /app
 COPY --from=0 /usr/app/configuration /app/configuration
