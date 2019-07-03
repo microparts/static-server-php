@@ -143,6 +143,8 @@ final class InjectConfigFileToIndexModify implements ModifyInterface
      */
     private function beforeFirstScript(DOMDocument $dom, DOMElement $script, Transfer $changed): Transfer
     {
+        $this->configPreload($dom);
+
         $scripts = $dom->getElementsByTagName('script');
 
         // If can't found any <script> tag, we will skip injecting.
@@ -158,5 +160,36 @@ final class InjectConfigFileToIndexModify implements ModifyInterface
         );
 
         return $changed;
+    }
+
+    /**
+     * Preloading __config.js
+     *
+     * https://developers.google.com/web/tools/lighthouse/audits/preload
+     *
+     * @param \DOMDocument $dom
+     *
+     * @return void
+     */
+    private function configPreload(DOMDocument $dom): void
+    {
+        $preload = $dom->createElement('link');
+        $preload->setAttribute('rel', 'preload');
+        $preload->setAttribute('href', $this->location);
+        $preload->setAttribute('as', 'script');
+
+        $link = $dom->getElementsByTagName('link');
+
+        if ($link->length > 0) {
+            $link->item(0)->parentNode->insertBefore($preload, $link->item(0));
+            return;
+        }
+
+        $head = $dom->getElementsByTagName('head');
+
+        if ($head->length > 0) {
+            $head->item(0)->appendChild($preload);
+            return;
+        }
     }
 }

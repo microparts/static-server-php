@@ -27,13 +27,14 @@ class InjectConfigToIndexHandlerTest extends TestCase
     public function testHowInjectingWorksWithStandardCase()
     {
         $results = $this->newInjectHandle('tests_inject_head', '/vue/index.html');
-        $this->assertInject($results);
+        $this->assertStringContainsString('/__config.js', $results->getContent());
+        $this->assertStringContainsString('preload', $results->getContent());
     }
 
     public function testHowInjectingWorksWithoutHeadSection()
     {
         $results = $this->newInjectHandle('tests_inject_head');
-        $this->assertInject($results);
+        $this->assertStringContainsString('/__config.js', $results->getContent());
     }
 
     public function testHowInjectingWorksWithInvalidValue()
@@ -46,12 +47,23 @@ class InjectConfigToIndexHandlerTest extends TestCase
     {
         $results = $this->newInjectHandle('tests_inject_head', '/empty_index/index.html');
         $this->assertStringNotContainsString('__config', $results->getContent());
+        $this->assertStringNotContainsString('preload', $results->getContent());
     }
 
     public function testHowInjectingWorksWithoutScriptTag()
     {
         $results = $this->newInjectHandle('tests', '/empty_index/index.html');
         $this->assertStringNotContainsString('__config', $results->getContent());
+        $this->assertStringNotContainsString('preload', $results->getContent());
+    }
+
+    public function testHowInjectingPreloading()
+    {
+        $results = $this->newInjectHandle('tests', '/head_link_exists/index.html');
+        $this->assertStringContainsString('preload', $results->getContent());
+
+        $results = $this->newInjectHandle('tests', '/head_link_not_exists/index.html');
+        $this->assertStringContainsString('preload', $results->getContent());
     }
 
     /**
@@ -71,10 +83,5 @@ class InjectConfigToIndexHandlerTest extends TestCase
         $transfer->setContent(file_get_contents($path));
 
         return $handler($transfer, $transfer);
-    }
-
-    private function assertInject(Transfer $transfer)
-    {
-        $this->assertStringContainsString('/__config.js', $transfer->getContent());
     }
 }

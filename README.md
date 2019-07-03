@@ -23,7 +23,7 @@ Server created for javascript SPA apps like: Vue, React, Angular, etc.
 ## Docker usage
 
 ```Dockerfile
-FROM microparts/static-server-php:1.1.2
+FROM microparts/static-server-php:1.1.3
 
 COPY dist/ /app
 # frontend yaml configuration
@@ -175,6 +175,8 @@ window.__vcs = '%s';
 
 console.log('%%cSTAGE=dev SHA1=55b5293; %%cSecurity bugs: security@teamc.io, Job/partnership: work@teamc.io','color:#F44336','color:#009688');
 ```
+
+Also, will be injected `<link>` tag with `rel=preload`. [More](https://developers.google.com/web/tools/lighthouse/audits/preload).
 
 3. Loads all content of static files to memory
 4. Starts the server.
