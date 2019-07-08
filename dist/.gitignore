@@ -3,3 +3,5 @@
 !robots.txt
 !favicon.ico
 !index.html
+!.well-known/security.txt
+!.well-known/

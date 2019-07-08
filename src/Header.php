@@ -2,6 +2,7 @@
 
 namespace StaticServer;
 
+use InvalidArgumentException;
 use Microparts\Configuration\ConfigurationInterface;
 use Swoole\Http\Response;
 
@@ -22,6 +23,7 @@ final class Header
         'x_content_type_options' => 'X-Content-Type-Options',
         'x_ua_compatible'        => 'X-UA-Compatible',
         'sts'                    => 'Strict-Transport-Security',
+        'link'                   => 'Link',
     ];
 
     /**
@@ -55,8 +57,28 @@ final class Header
      */
     private function prepareBeforeRequest(): void
     {
-        foreach ($this->conf->get('server.headers') as $header => $value) {
-            $this->prepared[self::CONFIG_MAP[$header]] = join('; ', (array) $value);
+        foreach ($this->conf->get('server.headers') as $header => $values) {
+            if (!isset(self::CONFIG_MAP[$header])) {
+                throw new InvalidArgumentException('Header not supported.');
+            }
+
+            $item = self::CONFIG_MAP[$header];
+
+            // Backward compatibility.
+            if (!isset($values[0]['value'])) {
+                $this->prepared[$item][] = join('; ', (array) $values);
+            }
+
+            // Checks new extended format for sent headers from yaml values.
+            if (is_array($values) && count($values) > 0 && isset($values[0]['value'])) {
+                foreach ($values as $value) {
+                    if (!isset($value['value'])) {
+                        throw new InvalidArgumentException('Invalid header format, see docs & examples.');
+                    }
+
+                    $this->prepared[$item][] = join('; ', (array) $value['value']);
+                }
+            }
         }
     }
 
@@ -72,8 +94,10 @@ final class Header
         $response->header('software-server', '');
         $response->header('server', '');
 
-        foreach ($this->prepared as $header => $value) {
-            $response->header($header, $value);
+        foreach ($this->prepared as $header => $values) {
+            foreach ($values as $value) {
+                $response->header($header, $value);
+            }
         }
     }
 }

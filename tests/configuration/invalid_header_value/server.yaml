@@ -1,0 +1,9 @@
+invalid_header_value:
+  server:
+    headers:
+      link:
+        - value: asdasd
+        - val: sd
+        - 123
+    port: 8081
+    root: ./tests/example_dist/simple

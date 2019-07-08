@@ -23,7 +23,7 @@ Server created for javascript SPA apps like: Vue, React, Angular, etc.
 ## Docker usage
 
 ```Dockerfile
-FROM microparts/static-server-php:1.1.3
+FROM microparts/static-server-php:1.1.4
 
 COPY dist/ /app
 # frontend yaml configuration
@@ -203,9 +203,13 @@ Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
 <img alt="Secure headers proof" src="./resource/secureheaderscom.png" height="514" />
 <br>
 
-Also, a frontend-developer should be use `Content Security Policy` protection, i.e configure server himself.
+### CSP header
 
-It creates a `server.yaml` config file and add it to stage directory (dev/prod/local) with following contents:
+Frontend-developer should be use `Content Security Policy` protection, 
+i.e configure server himself.
+
+It creates a `server.yaml` config file and add it to stage directory 
+`dev/prod/local` (or only to `defaults` folder) with following contents:
 
 ```yaml
 dev:
@@ -221,6 +225,28 @@ dev:
 ```
 
 And it edit in accordance with business logic of application.
+
+### Link header
+
+As new feature since `1.1.4` version you able to use `Link` header 
+for server configuration. 
+
+* How it use for `<link rel=preload>` requirements (lighthouse), – https://w3c.github.io/preload/#example-3 , https://w3c.github.io/preload/#example-6
+* Specification https://tools.ietf.org/html/rfc5988#section-5
+
+Example:
+
+```yaml
+dev:
+  server:
+    headers:
+      link:
+        - value: </app/style.css>; rel=preload; as=style; nopush 
+        - value:
+            - <https://example.com/app/script.js>
+            - rel=preload
+            - as=script
+```
 
 ## Compression
 
@@ -250,11 +276,13 @@ Root directory contains following files from scratch:
 ├── favicon.ico
 ├── index.html
 └── robots.txt
+└── .well-known/security.txt
 ```
 
 * `favicon.ico` – is a transparent `.ico` file (for prevent error logs).
 * `index.html` – simple index file with hello message.
 * `robots.txt` – the file which blocks all robots by default.
+* `/.well-known/security.txt` – https://securitytxt.org/
 
 Each file can be replaced.
 

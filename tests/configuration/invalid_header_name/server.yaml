@@ -1,0 +1,6 @@
+invalid_header_name:
+  server:
+    headers:
+      foo: bar
+    port: 8081
+    root: ./tests/example_dist/simple
