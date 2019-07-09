@@ -276,7 +276,6 @@ Root directory contains following files from scratch:
 ├── favicon.ico
 ├── index.html
 └── robots.txt
-└── .well-known/security.txt
 ```
 
 * `favicon.ico` – is a transparent `.ico` file (for prevent error logs).

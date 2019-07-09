@@ -1,2 +1,0 @@
-Contact: security@teamc.io
-Preferred-Languages: en, ru

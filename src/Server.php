@@ -11,6 +11,7 @@ use StaticServer\Modifier\Modify;
 use StaticServer\Modifier\InjectConfigFileToIndexModify;
 use StaticServer\Modifier\NullGenericModify;
 use StaticServer\Modifier\PrepareConfigModify;
+use StaticServer\Modifier\SecurityTxtModify;
 
 final class Server
 {
@@ -118,7 +119,9 @@ final class Server
             $location = $this->getConfigName('/__config.js');
             $mod = new Modify();
             $mod->addTemplate(__DIR__ . '/stub/__config.js', $location);
+            $mod->addTemplate(__DIR__ . '/stub/security.txt', '/.well-known/security.txt');
             $mod->addModifier(new PrepareConfigModify($this->conf, $this->stage, $this->sha1));
+            $mod->addModifier(new SecurityTxtModify($this->conf));
             $mod->addModifier(new InjectConfigFileToIndexModify($this->conf, $location));
         } else {
             $mod = new NullGenericModify();

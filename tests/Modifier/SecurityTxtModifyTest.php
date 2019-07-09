@@ -7,9 +7,9 @@ use StaticServer\Modifier\PrepareConfigModify;
 use StaticServer\Tests\TestCase;
 use StaticServer\Transfer;
 
-class PrepareConfigHandlerTest extends TestCase
+class SecurityTxtModifyTest extends TestCase
 {
-    public function testHowHandlerReplaceTemplate()
+    public function testHowSecurityTxtHandlerReplaceTemplate()
     {
         $conf = new Configuration(__DIR__ . '/../configuration');
         $conf->load();
