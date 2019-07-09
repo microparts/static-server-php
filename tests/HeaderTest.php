@@ -16,7 +16,7 @@ class HeaderTest extends TestCase
 
         $response = $this->createMock(Response::class);
         $response
-            ->expects($this->exactly(count($conf->get('server.headers')) + 3)) // +3 because 2 hardcoded and 1 header have 2 values.
+            ->expects($this->exactly(count($conf->get('server.headers')) + 2)) // +2 because 2 hardcoded.
             ->method('header')
             ->willReturn(null);
 

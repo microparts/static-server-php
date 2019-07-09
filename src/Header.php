@@ -53,6 +53,8 @@ final class Header
     /**
      * Prepare headers before handling requests.
      *
+     * https://tools.ietf.org/html/rfc5988#section-5.5
+     *
      * @return void
      */
     private function prepareBeforeRequest(): void
@@ -66,18 +68,21 @@ final class Header
 
             // Backward compatibility.
             if (!isset($values[0]['value'])) {
-                $this->prepared[$item][] = join('; ', (array) $values);
+                $this->prepared[$item] = join('; ', (array) $values);
             }
 
             // Checks new extended format for sent headers from yaml values.
             if (is_array($values) && count($values) > 0 && isset($values[0]['value'])) {
+                $array = [];
                 foreach ($values as $value) {
                     if (!isset($value['value'])) {
                         throw new InvalidArgumentException('Invalid header format, see docs & examples.');
                     }
 
-                    $this->prepared[$item][] = join('; ', (array) $value['value']);
+                    $array[] = join('; ', (array) $value['value']);
                 }
+
+                $this->prepared[$item] = join(', ', $array);
             }
         }
     }
@@ -94,10 +99,8 @@ final class Header
         $response->header('software-server', '');
         $response->header('server', '');
 
-        foreach ($this->prepared as $header => $values) {
-            foreach ($values as $value) {
-                $response->header($header, $value);
-            }
+        foreach ($this->prepared as $header => $value) {
+            $response->header($header, $value);
         }
     }
 }
