@@ -253,7 +253,7 @@ And it edit in accordance with business logic of application.
 
 ### Link header
 
-As new feature since `1.2.0` version you able to use `Link` header 
+As new feature since `1.1.4` version you able to use `Link` header 
 for server configuration. 
 
 * How it use for `<link rel=preload>` requirements (lighthouse), – https://w3c.github.io/preload/#example-3 , https://w3c.github.io/preload/#example-6
