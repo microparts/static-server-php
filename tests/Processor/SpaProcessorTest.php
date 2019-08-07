@@ -16,9 +16,9 @@ class SpaProcessorTest extends TestCase
     public function provideDataToServeFiles()
     {
         return [
+            ['/', CompressionFactory::create('br', 11)->compress('default index page')],
             ['/foobar', file_get_contents(__FILE__)],
             ['/file.omg', '404 not found'],
-            ['/', CompressionFactory::create('br', 11)->compress('default index page')],
             ['/healthcheck', 'ok'],
             ['/asd', 'default index page'],
         ];
@@ -38,7 +38,10 @@ class SpaProcessorTest extends TestCase
         $conf = new Configuration(__DIR__ . '/../configuration', 'nested');
         $conf->load();
 
-        $spa = new SpaProcessor($conf);
+        $spa = new SpaProcessor();
+        $spa->setConfiguration($conf);
+        $spa->clearCache();
+        $spa->prepare();
 
         $spa->load($m->modify([]));
 

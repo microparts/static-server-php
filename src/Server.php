@@ -2,7 +2,6 @@
 
 namespace StaticServer;
 
-use Microparts\Configuration\Configuration;
 use Microparts\Logger\Logger;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
@@ -31,30 +30,49 @@ final class Server
     private $level;
 
     /**
+     * @var \StaticServer\Application
+     */
+    private $app;
+
+    /**
      * @var \Psr\Log\LoggerInterface
      */
     private $logger;
 
     /**
-     * @var \Microparts\Configuration\Configuration
-     */
-    private $conf;
-
-    /**
      * Server constructor.
      *
-     * @param string $stage
-     * @param string $sha1
-     * @param string $level
+     * @param \StaticServer\Application $app
      * @param \Psr\Log\LoggerInterface|null $logger
      */
-    public function __construct(string $stage, string $sha1, string $level = LogLevel::INFO, LoggerInterface $logger = null)
+    public function __construct(Application $app = null, LoggerInterface $logger = null)
     {
-        $this->stage  = $stage;
-        $this->sha1   = $sha1;
-        $this->level  = $level;
-        $this->logger = $logger ?: Logger::default('Server', $level);
-        $this->conf   = $this->loadConf();
+        $this->app    = $app;
+        $this->logger = $logger ?: Logger::default('Server');
+    }
+
+    /**
+     * @param string $stage
+     */
+    public function setStage(string $stage): void
+    {
+        $this->stage = $stage;
+    }
+
+    /**
+     * @param string $sha1
+     */
+    public function setSha1(string $sha1): void
+    {
+        $this->sha1 = $sha1;
+    }
+
+    /**
+     * @param string $level
+     */
+    public function setLevel(string $level): void
+    {
+        $this->level = $level;
     }
 
     /**
@@ -82,66 +100,49 @@ final class Server
     }
 
     /**
-     * @return \StaticServer\Server
-     */
-    public static function new(): self
-    {
-        $stage = getenv('STAGE') ?: 'defaults';
-        $sha1  = getenv('VCS_SHA1') ?: '';
-        $level = getenv('LOG_LEVEL') ?: LogLevel::INFO;
-
-        return new Server($stage, $sha1, $level);
-    }
-
-    /**
-     * @return \StaticServer\Server
-     */
-    public static function silent(): self
-    {
-        $stage = getenv('STAGE') ?: 'defaults';
-        $sha1  = getenv('VCS_SHA1') ?: '';
-        $level = getenv('LOG_LEVEL') ?: LogLevel::INFO;
-
-        return new Server($stage, $sha1, $level, new NullLogger());
-    }
-
-    /**
-     * Start server with default configuration.
-     *
      * @param bool $modify
+     * @return \StaticServer\Server
+     */
+    public static function new(bool $modify = true): self
+    {
+        $server = new Server();
+        $server->setFromGlobals();
+        $server->setDefaultPreferences($modify);
+
+        return $server;
+    }
+
+    /**
+     * @param bool $modify
+     * @return \StaticServer\Server
+     */
+    public static function silent(bool $modify = true): self
+    {
+        $server = new Server(null, new NullLogger());
+        $server->setFromGlobals();
+        $server->setDefaultPreferences($modify);
+
+        return $server;
+    }
+
+    /**
+     * Start server.
+     *
      * @param bool $dryRun
      *
      * @return void
      */
-    public function run(bool $modify = true, bool $dryRun = false): void
+    public function run(bool $dryRun = false): void
     {
-        if ($modify) {
-            $location = $this->getConfigName('/__config.js');
-            $mod = new Modify();
-            $mod->addTemplate(__DIR__ . '/stub/__config.js', $location);
-            $mod->addTemplate(__DIR__ . '/stub/security.txt', '/.well-known/security.txt');
-            $mod->addModifier(new PrepareConfigModify($this->conf, $this->stage, $this->sha1));
-            $mod->addModifier(new SecurityTxtModify($this->conf));
-            $mod->addModifier(new InjectConfigFileToIndexModify($this->conf, $location));
-        } else {
-            $mod = new NullGenericModify();
-        }
-
-        $http = new HttpApplication($this->conf, $this->stage, $this->sha1);
-        $http->setLogger($this->logger);
-        $http->setModifier($mod);
-
-        $dryRun ? $http->dryRun() : $http->run();
+        $dryRun ? $this->app->dryRun() : $this->app->run();
     }
 
     /**
      * DryRun.
-     *
-     * @param bool $modify
      */
-    public function dryRun(bool $modify = true): void
+    public function dryRun(): void
     {
-        $this->run($modify, true);
+        $this->app->dryRun();
     }
 
     /**
@@ -151,24 +152,59 @@ final class Server
      */
     public function dump(): void
     {
-        printf("CONFIG_PATH = %s\n", $this->conf->getPath());
+        $conf = $this->app->getConfiguration();
+
+        printf("CONFIG_PATH = %s\n", $conf->getPath());
         printf("STAGE = %s\n", $this->getStage());
         printf("VCS_SHA1 = %s\n", $this->getSha1());
         printf("LOG_LEVEL = %s\n", $this->getLevel());
 
-        printf('%s', $this->conf->dump());
+        printf('%s', $conf->dump());
     }
 
     /**
-     * @return Configuration
+     * Set common variables from globals.
+     *
+     * @return void
      */
-    private function loadConf(): Configuration
+    public function setFromGlobals(): void
     {
-        $conf = Configuration::auto($this->getStage());
-        $conf->setLogger($this->logger);
-        $conf->load();
+        $stage = getenv('STAGE') ?: 'defaults';
+        $sha1  = getenv('VCS_SHA1') ?: '';
+        $level = getenv('LOG_LEVEL') ?: LogLevel::INFO;
 
-        return $conf;
+        $this->setStage($stage);
+        $this->setSha1($sha1);
+        $this->setLevel($level);
+    }
+
+    /**
+     * Creates Application object with default dependencies.
+     *
+     * @param bool $modify
+     *
+     * @return void
+     */
+    public function setDefaultPreferences(bool $modify = true): void
+    {
+        if ($modify) {
+            $mod = new Modify();
+            $location = $this->getConfigName('/__config.js');
+
+            $mod->addTemplate(__DIR__ . '/stub/__config.js', $location);
+            $mod->addTemplate(__DIR__ . '/stub/security.txt', '/.well-known/security.txt');
+            $mod->addModifier(new PrepareConfigModify($this->stage, $this->sha1));
+            $mod->addModifier(new SecurityTxtModify());
+            $mod->addModifier(new InjectConfigFileToIndexModify($location));
+        } else {
+            $mod = new NullGenericModify();
+        }
+
+        $app = new Application($this->stage, $this->sha1);
+        $app->setLogger($this->logger);
+        $app->setModifier($mod);
+
+        $this->app = $app;
     }
 
     /**

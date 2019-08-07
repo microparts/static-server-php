@@ -18,7 +18,8 @@ class RecursiveIteratorTest extends TestCase
         $conf = new Configuration(__DIR__ . '/../configuration', 'nested');
         $conf->load();
 
-        $it = new RecursiveIterator($conf, new NullLogger());
+        $it = new RecursiveIterator(new NullLogger());
+        $it->setConfiguration($conf);
 
         $transfer = null;
         foreach ($it->iterate() as $item) {
@@ -43,7 +44,8 @@ class RecursiveIteratorTest extends TestCase
         $conf = new Configuration(__DIR__ . '/../configuration', 'not_found');
         $conf->load();
 
-        $it = new RecursiveIterator($conf, new NullLogger());
+        $it = new RecursiveIterator(new NullLogger());
+        $it->setConfiguration($conf);
         /** @var Transfer[] $array */
         iterator_to_array($it->iterate());
     }

@@ -89,6 +89,7 @@ class CompressTest extends TestCase
         $conf->load();
 
         $c = new Compress($conf);
+        $c->prepare();
 
         $request = $this->createMock(Request::class);
         $request->server['request_uri'] = '/index.html';
@@ -116,6 +117,7 @@ class CompressTest extends TestCase
         $conf->load();
 
         $c = new Compress($conf);
+        $c->prepare();
 
         $request = $this->createMock(Request::class);
         $request->server['request_uri'] = '/index.html';

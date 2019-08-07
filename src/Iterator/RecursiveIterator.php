@@ -3,18 +3,16 @@
 namespace StaticServer\Iterator;
 
 use InvalidArgumentException;
-use Microparts\Configuration\ConfigurationInterface;
+use Microparts\Configuration\ConfigurationAwareInterface;
+use Microparts\Configuration\ConfigurationAwareTrait;
 use Psr\Log\LoggerInterface;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use StaticServer\Transfer;
 
-final class RecursiveIterator implements IteratorInterface
+final class RecursiveIterator implements IteratorInterface, ConfigurationAwareInterface
 {
-    /**
-     * @var \Microparts\Configuration\ConfigurationInterface
-     */
-    private $conf;
+    use ConfigurationAwareTrait;
 
     /**
      * @var \Psr\Log\LoggerInterface
@@ -24,12 +22,10 @@ final class RecursiveIterator implements IteratorInterface
     /**
      * RecursiveIterator constructor.
      *
-     * @param \Microparts\Configuration\ConfigurationInterface $conf
      * @param \Psr\Log\LoggerInterface $logger
      */
-    public function __construct(ConfigurationInterface $conf, LoggerInterface $logger)
+    public function __construct(LoggerInterface $logger)
     {
-        $this->conf   = $conf;
         $this->logger = $logger;
     }
 
@@ -44,9 +40,6 @@ final class RecursiveIterator implements IteratorInterface
 
         $directory = new RecursiveDirectoryIterator($path);
         $iterator = new RecursiveIteratorIterator($directory);
-
-        $format = 'Files founded in %s, count: %d';
-        $this->logger->debug(sprintf($format, $path, iterator_count($iterator)));
 
         /** @var RecursiveDirectoryIterator $item */
         foreach ($iterator as $item) {
@@ -77,7 +70,7 @@ final class RecursiveIterator implements IteratorInterface
      */
     private function getRootPath(): string
     {
-        $root = realpath($this->conf->get('server.root'));
+        $root = realpath($this->configuration->get('server.root'));
 
         // If it exist, check if it's a directory
         if($root !== false && is_dir($root)) {

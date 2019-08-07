@@ -2,25 +2,13 @@
 
 namespace StaticServer\Modifier;
 
-use Microparts\Configuration\ConfigurationInterface;
+use Microparts\Configuration\ConfigurationAwareInterface;
+use Microparts\Configuration\ConfigurationAwareTrait;
 use StaticServer\Transfer;
 
-final class SecurityTxtModify implements ModifyInterface
+final class SecurityTxtModify implements ModifyInterface, ConfigurationAwareInterface
 {
-    /**
-     * @var \Microparts\Configuration\ConfigurationInterface
-     */
-    private $conf;
-
-    /**
-     * SecurityTxtModify constructor.
-     *
-     * @param \Microparts\Configuration\ConfigurationInterface $conf
-     */
-    public function __construct(ConfigurationInterface $conf)
-    {
-        $this->conf = $conf;
-    }
+    use ConfigurationAwareTrait;
 
     /**
      * Updates this file, where $changed object may be contains changes
@@ -42,8 +30,8 @@ final class SecurityTxtModify implements ModifyInterface
 
         $changed->setContent(sprintf(
             trim($changed->getContent()),
-            $this->conf->get('server.security_txt.contact'),
-            $this->conf->get('server.security_txt.preferred_lang'),
+            $this->configuration->get('server.security_txt.contact'),
+            $this->configuration->get('server.security_txt.preferred_lang'),
         ));
 
         return $changed;

@@ -14,7 +14,9 @@ class PrepareConfigModifyTest extends TestCase
         $conf = new Configuration(__DIR__ . '/../configuration');
         $conf->load();
 
-        $handler  = new SecurityTxtModify($conf);
+        $handler  = new SecurityTxtModify();
+        $handler->setConfiguration($conf);
+
         $path     = realpath(__DIR__ . '/../../src/stub/security.txt');
         $transfer = new Transfer('security.txt', $path, 'js', '/.well-known/security.txt');
         $transfer->setContent(file_get_contents($path));

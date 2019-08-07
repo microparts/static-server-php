@@ -6,11 +6,14 @@ use DOMDocument;
 use DOMElement;
 use InvalidArgumentException;
 use Masterminds\HTML5;
-use Microparts\Configuration\ConfigurationInterface;
+use Microparts\Configuration\ConfigurationAwareInterface;
+use Microparts\Configuration\ConfigurationAwareTrait;
 use StaticServer\Transfer;
 
-final class InjectConfigFileToIndexModify implements ModifyInterface
+final class InjectConfigFileToIndexModify implements ModifyInterface, ConfigurationAwareInterface
 {
+    use ConfigurationAwareTrait;
+
     /**
      * Injects the __config.js to top of <head> tag.
      * It will be block content rendering, so not recommended.
@@ -22,11 +25,6 @@ final class InjectConfigFileToIndexModify implements ModifyInterface
      * Better than `head` variant.
      */
     private const INJECT_BEFORE_SCRIPT = 'before_script';
-
-    /**
-     * @var \Microparts\Configuration\ConfigurationInterface
-     */
-    private $conf;
 
     /**
      * Server location of __config.js file.
@@ -45,12 +43,10 @@ final class InjectConfigFileToIndexModify implements ModifyInterface
     /**
      * InjectConfigFileToIndexModify constructor.
      *
-     * @param \Microparts\Configuration\ConfigurationInterface $conf
      * @param string $location
      */
-    public function __construct(ConfigurationInterface $conf, string $location = '/__config.js')
+    public function __construct(string $location = '/__config.js')
     {
-        $this->conf     = $conf;
         $this->location = $location;
         $this->html5    = new HTML5();
     }
@@ -67,7 +63,7 @@ final class InjectConfigFileToIndexModify implements ModifyInterface
      */
     public function __invoke(Transfer $changed, Transfer $origin): Transfer
     {
-        if ($changed->getFilename() !== $this->conf->get('server.index')) {
+        if ($changed->getFilename() !== $this->configuration->get('server.index')) {
             return $changed;
         }
 
@@ -75,11 +71,11 @@ final class InjectConfigFileToIndexModify implements ModifyInterface
         $script = $dom->createElement('script');
         $script->setAttribute('src', $this->location);
 
-        if ($this->conf->get('server.config.inject') === self::INJECT_TO_HEAD) {
+        if ($this->configuration->get('server.config.inject') === self::INJECT_TO_HEAD) {
             return $this->toTopOfHead($dom, $script, $changed);
         }
 
-        if ($this->conf->get('server.config.inject') === self::INJECT_BEFORE_SCRIPT) {
+        if ($this->configuration->get('server.config.inject') === self::INJECT_BEFORE_SCRIPT) {
             return $this->beforeFirstScript($dom, $script, $changed);
         }
 

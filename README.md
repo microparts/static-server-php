@@ -19,11 +19,12 @@ Server created for javascript SPA apps like: Vue, React, Angular, etc.
 * Corporate config standard supported by default and injected too.
 * Brotli-compression. Compression based on `Accept-Encoding` header. [More](#Compression).
 * Deny all `robots.txt` by default.
+* Hot reload
 
 ## Docker usage
 
 ```Dockerfile
-FROM microparts/static-server-php:1.1.4
+FROM microparts/static-server-php:1.2.0
 
 COPY dist/ /app
 # frontend yaml configuration
@@ -43,22 +44,43 @@ CLI usage implies 2 commands for usage:
 
 1) Start server:
 ```bash
-bin/static-server run
+server run
 ```
 
 Result:
 ```bash
-[2019-06-19 08:54:52] Server.INFO: CONFIG_PATH = /app/configuration  
-[2019-06-19 08:54:52] Server.INFO: STAGE = dev    
-[2019-06-19 08:54:52] Server.INFO: Configuration loaded.  
-[2019-06-19 08:54:52] Server.INFO: Application state is: STAGE=dev SHA1=55b5293  
-[2019-06-19 08:54:52] Server.INFO: HTTP static server started at 0.0.0.0:8080 
+[2019-08-07 18:05:17] Server.INFO: State: STAGE=dev SHA1=55b5293 WORKERS=16 PID=10768 CONFIG_PATH=/app/configuration  
+[2019-08-07 18:05:17] Server.INFO: Server started at 0.0.0.0:8080 
+```
+
+2) Reload
+
+After editing files or configuration you can reload server without restart master process.
+
+```bash
+server reload
+```
+
+Reload command result:
+```bash
+[2019-08-07 18:07:00] Reload.INFO: CONFIG_PATH = /app/configuration  
+[2019-08-07 18:07:00] Reload.INFO: STAGE = dev    
+[2019-08-07 18:07:00] Reload.INFO: Configuration loaded.  
+
+Server reloaded
+```
+
+Server result:
+```bash
+[2019-08-07 18:05:17] Server.INFO: State: STAGE=dev SHA1=55b5293 WORKERS=16 PID=10768 CONFIG_PATH=/app/configuration  
+[2019-08-07 18:05:17] Server.INFO: Server started at 0.0.0.0:8080 
+[2019-08-07 21:07:00 $10889.0]  INFO    Server is reloading all workers now
 ```
 
 
-2) Dump loaded configuration:
+3) Dump loaded configuration:
 ```bash
-bin/static-server dump
+server dump
 ```
 
 Result:
@@ -105,6 +127,9 @@ server:
     worker_num: 4
     log_level: 0
     buffer_output_size: 33554432
+  pid:
+    location: /var/run/server.pid
+    save: true
   mimes:
     map: application/json
     xml: application/xml
@@ -150,13 +175,13 @@ server:
       - autoplay 'none'
     referer_policy: no-referrer
     pragma: public
-    cache_control: public, must-revalidate, proxy-revalidate, max-age=31536000
+    cache_control: public, must-revalidate, proxy-revalidate, max-age=604800
     frame_options: sameorigin
     xss_protection: 1; mode=block
     x_content_type: nosniff
     x_content_type_options: nosniff
     x_ua_compatible: IE=edge
-    sts: 'max-age=31536000; includeSubDomains; preload'
+    sts: 'max-age=604800; includeSubDomains; preload'
 ```
 
 Comments about server configuration can be found [here](./configuration/defaults).
@@ -186,7 +211,7 @@ Also, will be injected `<link>` tag with `rel=preload`. [More](https://developer
 By default will be added following headers to response:
 ```http
 Pragma: public
-Cache-Control: public, must-revalidate, proxy-revalidate, max-age=31536000
+Cache-Control: public, must-revalidate, proxy-revalidate, max-age=604800
 X-XSS-Protection: 1; mode=block
 X-Frame-Options: SAMEORIGIN
 X-Content-Type: nosniff
@@ -195,7 +220,7 @@ X-Ua-Compatible: IE=edge
 Referrer-Policy: no-referrer
 Feature-Policy: geolocation 'none'; payment 'none'; microphone 'none'; camera 'none'; autoplay 'none'
 Content-Security-Policy: default-src 'self'; script-src 'self' cdnjs.cloudflare.com; img-src 'self' data:; style-src 'self' 'unsafe-inline' fonts.googleapis.com cdnjs.cloudflare.com; font-src 'self' data: fonts.gstatic.com cdnjs.cloudflare.com; form-action 'self'
-Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+Strict-Transport-Security: max-age=604800; includeSubDomains; preload
 ```
 
 `A+` rating issued by the site https://securityheaders.com.
@@ -228,7 +253,7 @@ And it edit in accordance with business logic of application.
 
 ### Link header
 
-As new feature since `1.1.4` version you able to use `Link` header 
+As new feature since `1.2.0` version you able to use `Link` header 
 for server configuration. 
 
 * How it use for `<link rel=preload>` requirements (lighthouse), – https://w3c.github.io/preload/#example-3 , https://w3c.github.io/preload/#example-6

@@ -3,10 +3,12 @@
 namespace StaticServer\Compression;
 
 use Microparts\Configuration\ConfigurationInterface;
+use StaticServer\Generic\ClearCacheInterface;
+use StaticServer\Generic\PrepareInterface;
 use Swoole\Http\Request;
 use Swoole\Http\Response;
 
-final class Compress
+final class Compress implements ClearCacheInterface, PrepareInterface
 {
     /**
      * Configuration object.
@@ -52,9 +54,23 @@ final class Compress
     public function __construct(ConfigurationInterface $conf)
     {
         $this->conf = $conf;
+    }
 
-        $this->preInitializationCompressionObjects();
-        $this->preInitializationAllowedExtensions();
+    /**
+     * Prepare some data before accept server requests.
+     *
+     * 1) Pre init compression objects.
+     * 2) Pre init allowed extensions.
+     *
+     * @return void
+     */
+    public function prepare(): void
+    {
+        foreach ($this->conf->get('server.compression.algorithms') as $algorithm) {
+            self::$objects[$algorithm['method']] = CompressionFactory::create($algorithm['method'], $algorithm['level']);
+        }
+
+        self::$extensions = array_fill_keys($this->conf->get('server.compression.extensions'), true);
     }
 
     /**
@@ -80,28 +96,6 @@ final class Compress
             $response->header('Content-Encoding', $method);
             $this->compressOrNot($uri, $method, $body);
         }
-    }
-
-    /**
-     * Pre init compression objects.
-     *
-     * @return void
-     */
-    private function preInitializationCompressionObjects(): void
-    {
-        foreach ($this->conf->get('server.compression.algorithms') as $algorithm) {
-            self::$objects[$algorithm['method']] = CompressionFactory::create($algorithm['method'], $algorithm['level']);
-        }
-    }
-
-    /**
-     * Pre init allowed extensions.
-     *
-     * @return void
-     */
-    private function preInitializationAllowedExtensions(): void
-    {
-        self::$extensions = array_fill_keys($this->conf->get('server.compression.extensions'), true);
     }
 
     /**
@@ -151,5 +145,18 @@ final class Compress
         } else {
             $body = self::$compressed[$method][$uri] = self::$objects[$method]->compress($body);
         }
+    }
+
+    /**
+     * Clear an object cache.
+     *
+     * @return void
+     */
+    public function clearCache(): void
+    {
+        self::$compressed = [];
+        self::$objects = [];
+        self::$extensions = [];
+        self::$accept = [];
     }
 }

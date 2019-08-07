@@ -2,13 +2,18 @@
 
 namespace StaticServer\Processor;
 
-use Microparts\Configuration\ConfigurationInterface;
+use Microparts\Configuration\ConfigurationAwareInterface;
+use Microparts\Configuration\ConfigurationAwareTrait;
+use StaticServer\Generic\ClearCacheInterface;
 use StaticServer\Compression\Compress;
+use StaticServer\Generic\PrepareInterface;
 use Swoole\Http\Request;
 use Swoole\Http\Response;
 
-final class SpaProcessor implements ProcessorInterface
+final class SpaProcessor implements ProcessorInterface, ClearCacheInterface, ConfigurationAwareInterface, PrepareInterface
 {
+    use ConfigurationAwareTrait;
+
     /**
      * Cached files, mimes, extensions.
      *
@@ -16,12 +21,11 @@ final class SpaProcessor implements ProcessorInterface
      *
      * @var array
      */
-    private static $cached;
-
-    /**
-     * @var \Microparts\Configuration\ConfigurationInterface
-     */
-    private $conf;
+    private static $cached = [
+        'mimes'     => [],
+        'files'     => [],
+        'extension' => [],
+    ];
 
     /**
      * Object who responsible to compress outputs data.
@@ -32,15 +36,27 @@ final class SpaProcessor implements ProcessorInterface
     private $compress;
 
     /**
-     * SpaProcessor constructor.
+     * Prepare some data before accept server requests.
      *
-     * @param \Microparts\Configuration\ConfigurationInterface $conf
+     * @return void
      */
-    public function __construct(ConfigurationInterface $conf)
+    public function prepare(): void
     {
-        $this->conf = $conf;
-        $this->compress = new Compress($conf);
+        if (!is_null($this->compress)) {
+            $this->compress->clearCache();
+        }
 
+        $this->compress = new Compress($this->configuration);
+        $this->compress->prepare();
+    }
+
+    /**
+     * Clear an object cache.
+     *
+     * @return void
+     */
+    public function clearCache(): void
+    {
         self::$cached = [
             'mimes'     => [],
             'files'     => [],
@@ -60,13 +76,13 @@ final class SpaProcessor implements ProcessorInterface
         /** @var \StaticServer\Transfer $item */
         foreach ($files as $item) {
             self::$cached['files'][$item->getLocation()] = $item->getContent();
-            self::$cached['mimes'][$item->getLocation()] = $this->conf->get('server.mimes.' . $item->getExtension(), 'text/plain');
+            self::$cached['mimes'][$item->getLocation()] = $this->configuration->get('server.mimes.' . $item->getExtension(), 'text/plain');
             self::$cached['extension'][$item->getLocation()] = $item->getExtension();
 
             // Default page.
-            if ($item->getFilename() === $this->conf->get('server.index')) {
+            if ($item->getFilename() === $this->configuration->get('server.index')) {
                 self::$cached['files']['/'] = $item->getContent();
-                self::$cached['mimes']['/'] = $this->conf->get('server.mimes.html');
+                self::$cached['mimes']['/'] = $this->configuration->get('server.mimes.html');
                 self::$cached['extension']['/'] = 'html';
             }
         }

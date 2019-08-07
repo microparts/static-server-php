@@ -1,0 +1,4 @@
+{
+  "output": "bin/server.phar",
+  "main": "bin/server"
+}

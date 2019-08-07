@@ -2,6 +2,7 @@
 <?php
 
 use StaticServer\Console\DumpConfigCommand;
+use StaticServer\Console\ReloadServerCommand;
 use StaticServer\Console\RunServerCommand;
 use Symfony\Component\Console\Application;
 
@@ -18,7 +19,8 @@ foreach ($locations as $file) {
     }
 }
 
-$app = new Application('Static server', '1.0.3');
+$app = new Application('Static server', '1.2.0');
 $app->add(new RunServerCommand());
 $app->add(new DumpConfigCommand());
+$app->add(new ReloadServerCommand());
 $app->run();

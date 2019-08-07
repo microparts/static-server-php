@@ -2,15 +2,13 @@
 
 namespace StaticServer\Modifier;
 
-use Microparts\Configuration\ConfigurationInterface;
+use Microparts\Configuration\ConfigurationAwareInterface;
+use Microparts\Configuration\ConfigurationAwareTrait;
 use StaticServer\Transfer;
 
-final class PrepareConfigModify implements ModifyInterface
+final class PrepareConfigModify implements ModifyInterface, ConfigurationAwareInterface
 {
-    /**
-     * @var \Microparts\Configuration\ConfigurationInterface
-     */
-    private $conf;
+    use ConfigurationAwareTrait;
 
     /**
      * Application stage. Like dev/prod/local/what-else.
@@ -29,13 +27,11 @@ final class PrepareConfigModify implements ModifyInterface
     /**
      * PrepareConfigModify constructor.
      *
-     * @param \Microparts\Configuration\ConfigurationInterface $conf
      * @param string $stage
      * @param string $vcsSha1
      */
-    public function __construct(ConfigurationInterface $conf, string $stage, string $vcsSha1 = '')
+    public function __construct(string $stage, string $vcsSha1 = '')
     {
-        $this->conf    = $conf;
         $this->stage   = $stage;
         $this->vcsSha1 = $vcsSha1;
     }
@@ -74,18 +70,15 @@ final class PrepareConfigModify implements ModifyInterface
      */
     private function prepare(Transfer $transfer): string
     {
-        $information = sprintf(
-            $this->conf->get('server.log_info'),
-            $this->stage,
-            $this->vcsSha1
-        );
+        $format = $this->configuration->get('server.log_info');
+        $message = sprintf($format, $this->stage, $this->vcsSha1);
 
         return sprintf(
             trim($transfer->getContent()),
             $this->stage,
             json_encode($this->cleanupServerKeyFromConfig()),
             $this->vcsSha1,
-            $information
+            $message
         );
     }
 
@@ -96,7 +89,7 @@ final class PrepareConfigModify implements ModifyInterface
      */
     private function cleanupServerKeyFromConfig(): array
     {
-        $array = $this->conf->all();
+        $array = $this->configuration->all();
         unset($array['server']);
 
         return $array;

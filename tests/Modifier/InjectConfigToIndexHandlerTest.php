@@ -14,7 +14,8 @@ class InjectConfigToIndexHandlerTest extends TestCase
     public function testHowInjectingSkipFilesExceptIndex()
     {
         $conf = $this->createMock(ConfigurationInterface::class);
-        $handler = new InjectConfigFileToIndexModify($conf);
+        $handler = new InjectConfigFileToIndexModify();
+        $handler->setConfiguration($conf);
 
         $path = realpath(__DIR__ . '/../example_dist/simple/nested/bla-bla.txt');
         $transfer = new Transfer('bla-bla.txt', $path, 'txt', '/bla-bla.txt');
@@ -76,7 +77,8 @@ class InjectConfigToIndexHandlerTest extends TestCase
         $conf = new Configuration(__DIR__ . '/../configuration', $config);
         $conf->load();
 
-        $handler = new InjectConfigFileToIndexModify($conf);
+        $handler = new InjectConfigFileToIndexModify();
+        $handler->setConfiguration($conf);
 
         $path = realpath(__DIR__ . '/../example_dist' . $location);
         $transfer = new Transfer('index.html', $path, 'html', '/index.html');

@@ -4,9 +4,11 @@ namespace StaticServer;
 
 use InvalidArgumentException;
 use Microparts\Configuration\ConfigurationInterface;
+use StaticServer\Generic\ClearCacheInterface;
+use StaticServer\Generic\PrepareInterface;
 use Swoole\Http\Response;
 
-final class Header
+final class Header implements PrepareInterface, ClearCacheInterface
 {
     /**
      * Map headers names in config to real http headers names
@@ -46,8 +48,6 @@ final class Header
     public function __construct(ConfigurationInterface $conf)
     {
         $this->conf = $conf;
-
-        $this->prepareBeforeRequest();
     }
 
     /**
@@ -57,7 +57,7 @@ final class Header
      *
      * @return void
      */
-    private function prepareBeforeRequest(): void
+    public function prepare(): void
     {
         foreach ($this->conf->get('server.headers') as $header => $values) {
             if (!isset(self::CONFIG_MAP[$header])) {
@@ -102,5 +102,13 @@ final class Header
         foreach ($this->prepared as $header => $value) {
             $response->header($header, $value);
         }
+    }
+
+    /**
+     * Clear an object cache.
+     */
+    public function clearCache(): void
+    {
+        $this->prepared = [];
     }
 }

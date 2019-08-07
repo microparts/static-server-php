@@ -2,11 +2,15 @@
 
 namespace StaticServer\Modifier;
 
+use Microparts\Configuration\ConfigurationAwareInterface;
+use Microparts\Configuration\ConfigurationAwareTrait;
 use SplFileInfo;
 use StaticServer\Transfer;
 
-final class Modify implements GenericModifyInterface
+final class Modify implements GenericModifyInterface, ConfigurationAwareInterface
 {
+    use ConfigurationAwareTrait;
+
     /**
      * @var array
      */
@@ -39,11 +43,11 @@ final class Modify implements GenericModifyInterface
     public function addTemplate(string $path, string $location): void
     {
         $file = new SplFileInfo($path);
-        $contents = file_get_contents($file->getRealPath());
+        $contents = file_get_contents($path);
 
         $this->ghosts[] = new Transfer(
             $file->getFilename(),
-            $file->getRealPath(),
+            $file->getRealPath() ?: $path,
             $file->getExtension(),
             $location,
             $contents
@@ -66,12 +70,18 @@ final class Modify implements GenericModifyInterface
     {
         foreach ($this->ghosts as $item) {
             yield array_reduce($this->modifiers, function ($carry, ModifyInterface $handler) use ($item) {
+                if ($handler instanceof ConfigurationAwareInterface) {
+                    $handler->setConfiguration($this->configuration);
+                }
                 return $handler($carry ?: clone $item, $item);
             });
         }
 
         foreach ($files as $item) {
             yield array_reduce($this->modifiers, function ($carry, ModifyInterface $handler) use ($item) {
+                if ($handler instanceof ConfigurationAwareInterface) {
+                    $handler->setConfiguration($this->configuration);
+                }
                 return $handler($carry ?: clone $item, $item);
             });
         }

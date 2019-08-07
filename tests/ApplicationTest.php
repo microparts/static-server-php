@@ -5,7 +5,7 @@ namespace StaticServer\Tests;
 use StaticServer\Server;
 use Throwable;
 
-class HttpApplicationTest extends TestCase
+class ApplicationTest extends TestCase
 {
     public function testInit()
     {
@@ -15,7 +15,6 @@ class HttpApplicationTest extends TestCase
             putenv('STAGE=tests');
             putenv("CONFIG_PATH=$path");
             Server::silent()->dryRun();
-            Server::silent()->dryRun(false);
         } catch (Throwable $e) {
             printf($e);
             $this->assertFalse((bool) $e);

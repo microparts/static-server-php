@@ -21,6 +21,7 @@ class HeaderTest extends TestCase
             ->willReturn(null);
 
         $h = new Header($conf);
+        $h->prepare();
         $h->sent($response);
 
         $this->assertTrue(true);
@@ -40,6 +41,7 @@ class HeaderTest extends TestCase
             ->willReturn(null);
 
         $h = new Header($conf);
+        $h->prepare();
         $h->sent($response);
 
         $this->assertTrue(true);
@@ -59,6 +61,7 @@ class HeaderTest extends TestCase
             ->willReturn(null);
 
         $h = new Header($conf);
+        $h->prepare();
         $h->sent($response);
 
         $this->assertTrue(true);
