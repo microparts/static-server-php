@@ -3,13 +3,16 @@
 namespace StaticServer;
 
 use InvalidArgumentException;
-use Microparts\Configuration\ConfigurationInterface;
+use Microparts\Configuration\ConfigurationAwareInterface;
+use Microparts\Configuration\ConfigurationAwareTrait;
 use StaticServer\Generic\ClearCacheInterface;
 use StaticServer\Generic\PrepareInterface;
 use Swoole\Http\Response;
 
-final class Header implements PrepareInterface, ClearCacheInterface
+final class Header implements PrepareInterface, ClearCacheInterface, ConfigurationAwareInterface
 {
+    use ConfigurationAwareTrait;
+
     /**
      * Map headers names in config to real http headers names
      */
@@ -41,16 +44,6 @@ final class Header implements PrepareInterface, ClearCacheInterface
     private $prepared = [];
 
     /**
-     * Header constructor.
-     *
-     * @param \Microparts\Configuration\ConfigurationInterface $conf
-     */
-    public function __construct(ConfigurationInterface $conf)
-    {
-        $this->conf = $conf;
-    }
-
-    /**
      * Prepare headers before handling requests.
      *
      * https://tools.ietf.org/html/rfc5988#section-5.5
@@ -59,7 +52,7 @@ final class Header implements PrepareInterface, ClearCacheInterface
      */
     public function prepare(): void
     {
-        foreach ($this->conf->get('server.headers') as $header => $values) {
+        foreach ($this->configuration->get('server.headers') as $header => $values) {
             if (!isset(self::CONFIG_MAP[$header])) {
                 throw new InvalidArgumentException('Header not supported.');
             }

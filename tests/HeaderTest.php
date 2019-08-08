@@ -20,7 +20,8 @@ class HeaderTest extends TestCase
             ->method('header')
             ->willReturn(null);
 
-        $h = new Header($conf);
+        $h = new Header();
+        $h->setConfiguration($conf);
         $h->prepare();
         $h->sent($response);
 
@@ -40,7 +41,8 @@ class HeaderTest extends TestCase
             ->method('header')
             ->willReturn(null);
 
-        $h = new Header($conf);
+        $h = new Header();
+        $h->setConfiguration($conf);
         $h->prepare();
         $h->sent($response);
 
@@ -60,7 +62,8 @@ class HeaderTest extends TestCase
             ->method('header')
             ->willReturn(null);
 
-        $h = new Header($conf);
+        $h = new Header();
+        $h->setConfiguration($conf);
         $h->prepare();
         $h->sent($response);
 

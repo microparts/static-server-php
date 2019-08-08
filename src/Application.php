@@ -40,7 +40,7 @@ final class Application
     private $header;
 
     /**
-     * @var \StaticServer\Processor\ProcessorInterface|\StaticServer\Generic\ClearCacheInterface
+     * @var \StaticServer\Processor\ProcessorInterface|\StaticServer\Generic\ClearCacheInterface|ConfigurationAwareInterface
      */
     private $processor;
 
@@ -82,7 +82,7 @@ final class Application
         $this->cpuNum = swoole_cpu_num() * 2;
         $this->conf   = $this->loadConfiguration();
 
-        $this->header = new Header($this->conf);
+        $this->header = new Header();
 
         // disable logs and modifiers by default
         $this->setLogger(new NullLogger());
@@ -100,10 +100,6 @@ final class Application
      */
     public function setProcessor(ProcessorInterface $processor): void
     {
-        if ($processor instanceof ConfigurationAwareInterface) {
-            $processor->setConfiguration($this->conf);
-        }
-
         $this->processor = $processor;
     }
 
@@ -116,10 +112,6 @@ final class Application
      */
     public function setIterator(IteratorInterface $iterator): void
     {
-        if ($iterator instanceof ConfigurationAwareInterface) {
-            $iterator->setConfiguration($this->conf);
-        }
-
         $this->iterator = $iterator;
     }
 
@@ -132,10 +124,6 @@ final class Application
      */
     public function setModifier(GenericModifyInterface $modify): void
     {
-        if ($modify instanceof ConfigurationAwareInterface) {
-            $modify->setConfiguration($this->conf);
-        }
-
         $this->modify = $modify;
     }
 
@@ -191,18 +179,9 @@ final class Application
         $this->logger->debug('Reload configuration');
         $this->conf = $this->loadConfiguration();
 
-        $this->logger->debug('Clears headers cache and prepare theirs');
-        $this->header->clearCache();
-        $this->header->prepare();
-
-        if ($this->processor instanceof ClearCacheInterface) {
-            $this->logger->debug(sprintf('Clears cache for handled files. Used: [%s]', get_class($this->processor)));
-            $this->processor->clearCache();
-        }
-
-        if ($this->processor instanceof PrepareInterface) {
-            $this->processor->prepare();
-        }
+        $this->clearObjectsCaches();
+        $this->putConfigurationToObjects();
+        $this->prepareObjectsBeforeAcceptRequests();
 
         $this->logger->debug('Iterates files from server root dir');
         $files = $this->iterator->iterate();
@@ -212,6 +191,90 @@ final class Application
 
         $this->logger->debug(sprintf('Loads files to memory. Used: [%s]', get_class($this->processor)));
         $this->processor->load($modified);
+    }
+
+    /**
+     * Prepares objects if object support it.
+     *
+     * @return void
+     */
+    private function prepareObjectsBeforeAcceptRequests(): void
+    {
+        if ($this->header instanceof PrepareInterface) {
+            $this->logger->debug(sprintf('Prepare object before accept requests: %s', get_class($this->header)));
+            $this->header->prepare();
+        }
+
+        if ($this->iterator instanceof PrepareInterface) {
+            $this->logger->debug(sprintf('Prepare object before accept requests: %s', get_class($this->iterator)));
+            $this->iterator->prepare();
+        }
+
+        if ($this->modify instanceof PrepareInterface) {
+            $this->logger->debug(sprintf('Prepare object before accept requests: %s', get_class($this->modify)));
+            $this->modify->prepare();
+        }
+
+        if ($this->processor instanceof PrepareInterface) {
+            $this->logger->debug(sprintf('Prepare object before accept requests: %s', get_class($this->processor)));
+            $this->processor->prepare();
+        }
+    }
+
+    /**
+     * Clear objects caches if it supports.
+     *
+     * @return void
+     */
+    private function clearObjectsCaches(): void
+    {
+        if ($this->header instanceof ClearCacheInterface) {
+            $this->logger->debug(sprintf('Clear cache for: %s', get_class($this->header)));
+            $this->header->clearCache();
+        }
+
+        if ($this->iterator instanceof ClearCacheInterface) {
+            $this->logger->debug(sprintf('Clear cache for: %s', get_class($this->iterator)));
+            $this->iterator->clearCache();
+        }
+
+        if ($this->modify instanceof ClearCacheInterface) {
+            $this->logger->debug(sprintf('Clear cache for: %s', get_class($this->modify)));
+            $this->modify->clearCache();
+        }
+
+        if ($this->processor instanceof ClearCacheInterface) {
+            $this->logger->debug(sprintf('Clear cache for: %s', get_class($this->processor)));
+            $this->processor->clearCache();
+        }
+    }
+
+    /**
+     * Put config to objects if it supports.
+     *
+     * @return void
+     */
+    private function putConfigurationToObjects(): void
+    {
+        if ($this->header instanceof ConfigurationAwareInterface) {
+            $this->logger->debug(sprintf('Put configuration to: %s', get_class($this->header)));
+            $this->header->setConfiguration($this->conf);
+        }
+
+        if ($this->iterator instanceof ConfigurationAwareInterface) {
+            $this->logger->debug(sprintf('Put configuration to: %s', get_class($this->iterator)));
+            $this->iterator->setConfiguration($this->conf);
+        }
+
+        if ($this->modify instanceof ConfigurationAwareInterface) {
+            $this->logger->debug(sprintf('Put configuration to: %s', get_class($this->modify)));
+            $this->modify->setConfiguration($this->conf);
+        }
+
+        if ($this->processor instanceof ConfigurationAwareInterface) {
+            $this->logger->debug(sprintf('Put configuration to: %s', get_class($this->processor)));
+            $this->processor->setConfiguration($this->conf);
+        }
     }
 
     /**
