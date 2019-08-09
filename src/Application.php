@@ -282,11 +282,10 @@ final class Application
      */
     private function createServer(): Server
     {
-        $server = new Server(
-            $this->conf->get('server.host'),
-            $this->conf->get('server.port'),
-            SWOOLE_PROCESS
-        );
+        $host = $this->conf->get('server.host');
+        $port = (int) getenv('PORT') ?: $this->conf->get('server.port'); // Heroku compatibility.
+
+        $server = new Server($host, $port, SWOOLE_PROCESS);
 
         // swoole compression disabled and it not possible to override.
         $compress = [

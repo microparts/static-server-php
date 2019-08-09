@@ -16,4 +16,5 @@ RUN chmod +x /usr/bin/server
 EXPOSE 8080
 WORKDIR /app
 
-ENTRYPOINT server run
+ENTRYPOINT ["server"]
+CMD ["run"]
