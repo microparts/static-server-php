@@ -16,6 +16,7 @@ defaults:
     swoole:
       log_level: 0 # warning level, 0 debug
       buffer_output_size: 33554432 # 32 * 1024 * 1024
+      open_tcp_nodelay: 1
     pid:
       location: /var/run/server.pid
       save: true
