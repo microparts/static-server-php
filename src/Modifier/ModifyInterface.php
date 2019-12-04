@@ -2,7 +2,7 @@
 
 namespace StaticServer\Modifier;
 
-use StaticServer\Transfer;
+use StaticServer\Modifier\Iterator\Transfer;
 
 interface ModifyInterface
 {
@@ -11,9 +11,8 @@ interface ModifyInterface
      * from previous Modifier and where $origin object contains first
      * state of original file.
      *
-     * @param Transfer $changed
+     * @param \StaticServer\Modifier\Iterator\Transfer $changed
      * @param Transfer $origin
-     *
      * @return Transfer
      */
     public function __invoke(Transfer $changed, Transfer $origin): Transfer;

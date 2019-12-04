@@ -6,6 +6,7 @@ use Microparts\Logger\Logger;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 use Psr\Log\NullLogger;
+use StaticServer\Handler\NginxHandler;
 use StaticServer\Modifier\Modify;
 use StaticServer\Modifier\InjectConfigFileToIndexModify;
 use StaticServer\Modifier\NullGenericModify;
@@ -137,6 +138,16 @@ final class Server
         $dryRun ? $this->app->dryRun() : $this->app->run();
     }
 
+    public function stop(): void
+    {
+        $this->app->stop();
+    }
+
+    public function reload(): void
+    {
+        $this->app->reload();
+    }
+
     /**
      * DryRun.
      */
@@ -203,6 +214,7 @@ final class Server
         $app = new Application($this->stage, $this->sha1);
         $app->setLogger($this->logger);
         $app->setModifier($mod);
+        $app->setHandler(new NginxHandler());
 
         $this->app = $app;
     }

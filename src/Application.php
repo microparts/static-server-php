@@ -4,70 +4,27 @@ namespace StaticServer;
 
 use Microparts\Configuration\Configuration;
 use Microparts\Configuration\ConfigurationAwareInterface;
+use Microparts\Configuration\ConfigurationInterface;
+use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\NullLogger;
-use StaticServer\Generic\ClearCacheInterface;
-use StaticServer\Generic\PrepareInterface;
-use StaticServer\Iterator\IteratorInterface;
-use StaticServer\Iterator\RecursiveIterator;
+use StaticServer\Handler\HandlerInterface;
+use StaticServer\Header\ConvertsHeader;
+use StaticServer\Modifier\Iterator\IteratorInterface;
+use StaticServer\Modifier\Iterator\RecursiveIterator;
 use StaticServer\Modifier\GenericModifyInterface;
 use StaticServer\Modifier\NullGenericModify;
-use StaticServer\Processor\ProcessorInterface;
-use StaticServer\Processor\SpaProcessor;
-use Swoole\Http\Request;
-use Swoole\Http\Response;
-use Swoole\Http\Server;
 
 final class Application
 {
     use LoggerAwareTrait;
 
-    /**
-     * @var \Microparts\Configuration\ConfigurationInterface
-     */
-    private $conf;
-
-    /**
-     * @var Server
-     */
-    private $server;
-
-    /**
-     * Object to sent default headers.
-     *
-     * @var \StaticServer\Header
-     */
-    private $header;
-
-    /**
-     * @var \StaticServer\Processor\ProcessorInterface|\StaticServer\Generic\ClearCacheInterface|ConfigurationAwareInterface
-     */
-    private $processor;
-
-    /**
-     * @var \StaticServer\Iterator\IteratorInterface
-     */
-    private $iterator;
-
-    /**
-     * @var \StaticServer\Modifier\GenericModifyInterface
-     */
-    private $modify;
-
-    /**
-     * @var string
-     */
-    private $stage;
-
-    /**
-     * @var string
-     */
-    private $sha1;
-
-    /**
-     * @var float|int
-     */
-    private $cpuNum;
+    private ConfigurationInterface $conf;
+    private HandlerInterface $handler;
+    private IteratorInterface $iterator;
+    private GenericModifyInterface $modify;
+    private string $stage;
+    private string $sha1;
 
     /**
      * Application constructor.
@@ -77,37 +34,31 @@ final class Application
      */
     public function __construct(string $stage = '', string $sha1 = '')
     {
-        $this->stage  = $stage;
-        $this->sha1   = $sha1;
-        $this->cpuNum = swoole_cpu_num() * 2;
-        $this->conf   = $this->loadConfiguration();
-
-        $this->header = new Header();
+        $this->stage = $stage;
+        $this->sha1  = $sha1;
+        $this->conf  = $this->loadConfiguration();
 
         // disable logs and modifiers by default
         $this->setLogger(new NullLogger());
         $this->setModifier(new NullGenericModify());
-        $this->setProcessor(new SpaProcessor());
         $this->setIterator(new RecursiveIterator($this->logger));
     }
 
     /**
-     * Processor to process incoming request with defined logic.
-     *
-     * @param \StaticServer\Processor\ProcessorInterface $processor
-     *
-     * @return void
+     * @param \StaticServer\Handler\HandlerInterface $handler
+     * @return Application
      */
-    public function setProcessor(ProcessorInterface $processor): void
+    public function setHandler(HandlerInterface $handler): self
     {
-        $this->processor = $processor;
+        $this->handler = $handler;
+
+        return $this;
     }
 
     /**
      * Iterator to iterate files in server.root.
      *
-     * @param \StaticServer\Iterator\IteratorInterface $iterator
-     *
+     * @param \StaticServer\Modifier\Iterator\IteratorInterface $iterator
      * @return void
      */
     public function setIterator(IteratorInterface $iterator): void
@@ -144,7 +95,6 @@ final class Application
      */
     public function dryRun(): void
     {
-        $this->start();
         $this->ready();
     }
 
@@ -157,95 +107,79 @@ final class Application
      */
     public function run(): void
     {
-        $server = $this->createServer();
+        $this->ready();
+        $this->handler->start();
+    }
 
-        $this->registerOnStartListener($server);
-        $this->registerOnShutdownListener($server);
-        $this->registerOnWorkerStartListener($server);
-        $this->registerOnRequestListener($server);
+    public function stop(): void
+    {
+        $this->logger->info('Stopping server...');
 
-        $server->start();
+        $this->setLogger(new NullLogger());
+        $this->ready(false);
+        $this->handler->stop();
+    }
+
+    public function reload(): void
+    {
+        $this->ready();
+        $this->handler->reload();
     }
 
     /**
      * Prepare server to run.
      *
      * @codeCoverageIgnore
-     *
+     * @param bool $checkConfig
      * @return void
      */
-    private function ready(): void
+    private function ready(bool $checkConfig = true): void
     {
+        $format = 'State: STAGE=%s SHA1=%s CONFIG_PATH=%s';
+        $message = sprintf($format, $this->stage, $this->sha1, $this->conf->getPath());
+        $this->logger->info($message);
+
         $this->logger->debug('Reload configuration');
         $this->conf = $this->loadConfiguration();
 
-        $this->clearObjectsCaches();
+        $this->putLoggerToObjects();
         $this->putConfigurationToObjects();
-        $this->prepareObjectsBeforeAcceptRequests();
 
         $this->logger->debug('Iterates files from server root dir');
         $files = $this->iterator->iterate();
 
-        $this->logger->debug(sprintf('Modifying files and add templates. Used: [%s]', get_class($this->modify)));
-        $modified = $this->modify->modify($files);
+        $this->logger->debug(sprintf('Modifying files, add templates and override existing. Used: [%s]', get_class($this->modify)));
+        $this->modify->modifyAndSaveToDisk($files);
 
-        $this->logger->debug(sprintf('Loads files to memory. Used: [%s]', get_class($this->processor)));
-        $this->processor->load($modified);
-    }
+        $this->logger->debug(sprintf('Generate configuration for Handler. Used: [%s]', get_class($this->handler)));
+        $this->handler->checkDependenciesBeforeStart();
+        $this->handler->generateConfig(new ConvertsHeader());
 
-    /**
-     * Prepares objects if object support it.
-     *
-     * @return void
-     */
-    private function prepareObjectsBeforeAcceptRequests(): void
-    {
-        if ($this->header instanceof PrepareInterface) {
-            $this->logger->debug(sprintf('Prepare object before accept requests: %s', get_class($this->header)));
-            $this->header->prepare();
-        }
-
-        if ($this->iterator instanceof PrepareInterface) {
-            $this->logger->debug(sprintf('Prepare object before accept requests: %s', get_class($this->iterator)));
-            $this->iterator->prepare();
-        }
-
-        if ($this->modify instanceof PrepareInterface) {
-            $this->logger->debug(sprintf('Prepare object before accept requests: %s', get_class($this->modify)));
-            $this->modify->prepare();
-        }
-
-        if ($this->processor instanceof PrepareInterface) {
-            $this->logger->debug(sprintf('Prepare object before accept requests: %s', get_class($this->processor)));
-            $this->processor->prepare();
+        if ($checkConfig) {
+            $this->handler->checkConfig();
         }
     }
 
     /**
-     * Clear objects caches if it supports.
+     * Put logger to objects if it supports.
      *
      * @return void
      */
-    private function clearObjectsCaches(): void
+    private function putLoggerToObjects(): void
     {
-        if ($this->header instanceof ClearCacheInterface) {
-            $this->logger->debug(sprintf('Clear cache for: %s', get_class($this->header)));
-            $this->header->clearCache();
+        if ($this->iterator instanceof LoggerAwareInterface) {
+            $this->logger->debug(sprintf('Put logger to: %s', get_class($this->iterator)));
+            $this->iterator->setLogger($this->logger);
         }
 
-        if ($this->iterator instanceof ClearCacheInterface) {
-            $this->logger->debug(sprintf('Clear cache for: %s', get_class($this->iterator)));
-            $this->iterator->clearCache();
+        if ($this->modify instanceof LoggerAwareInterface) {
+            $this->logger->debug(sprintf('Put logger to: %s', get_class($this->modify)));
+            $this->modify->setLogger($this->logger);
         }
 
-        if ($this->modify instanceof ClearCacheInterface) {
-            $this->logger->debug(sprintf('Clear cache for: %s', get_class($this->modify)));
-            $this->modify->clearCache();
-        }
-
-        if ($this->processor instanceof ClearCacheInterface) {
-            $this->logger->debug(sprintf('Clear cache for: %s', get_class($this->processor)));
-            $this->processor->clearCache();
+        if ($this->handler instanceof LoggerAwareInterface) {
+            $this->logger->debug(sprintf('Put logger to: %s', get_class($this->handler)));
+            $this->handler->setLogger($this->logger);
         }
     }
 
@@ -256,11 +190,6 @@ final class Application
      */
     private function putConfigurationToObjects(): void
     {
-        if ($this->header instanceof ConfigurationAwareInterface) {
-            $this->logger->debug(sprintf('Put configuration to: %s', get_class($this->header)));
-            $this->header->setConfiguration($this->conf);
-        }
-
         if ($this->iterator instanceof ConfigurationAwareInterface) {
             $this->logger->debug(sprintf('Put configuration to: %s', get_class($this->iterator)));
             $this->iterator->setConfiguration($this->conf);
@@ -271,116 +200,10 @@ final class Application
             $this->modify->setConfiguration($this->conf);
         }
 
-        if ($this->processor instanceof ConfigurationAwareInterface) {
-            $this->logger->debug(sprintf('Put configuration to: %s', get_class($this->processor)));
-            $this->processor->setConfiguration($this->conf);
+        if ($this->handler instanceof ConfigurationAwareInterface) {
+            $this->logger->debug(sprintf('Put configuration to: %s', get_class($this->handler)));
+            $this->handler->setConfiguration($this->conf);
         }
-    }
-
-    /**
-     * @return \Swoole\Http\Server
-     */
-    private function createServer(): Server
-    {
-        $host = $this->conf->get('server.host');
-        $port = (int) getenv('PORT') ?: $this->conf->get('server.port'); // Heroku compatibility.
-
-        $server = new Server($host, $port, SWOOLE_PROCESS);
-
-        // swoole compression disabled and it not possible to override.
-        $compress = [
-            # Latest version of swoole (2019-06-04) can't compress response output if present Accept-Encoding header.
-            # Doesn't work any method: gzip, br.
-            'http_compression' => false,
-            'http_compression_level' => 0,
-        ];
-
-        $server->set(array_merge(
-            ['worker_num' => $this->cpuNum], // should be possible to override worker_num parameter from server config.
-            array_merge($this->conf->get('server.swoole'), $compress)
-        ));
-
-        return $server;
-    }
-
-    /**
-     * @param int|null $pid
-     * @param string|null $host
-     * @param int|null $port
-     *
-     * @return void
-     */
-    private function start(?int $pid = null, ?string $host = null, ?int $port = null): void
-    {
-        $host = $host ?: 'dryRun';
-
-        $format = 'State: STAGE=%s SHA1=%s WORKERS=%s PID=%d CONFIG_PATH=%s';
-        $message = sprintf($format, $this->stage, $this->sha1, $this->cpuNum, $pid, $this->conf->getPath());
-        $this->logger->info($message);
-        $this->logger->info(sprintf('Server started at %s:%d', $host, $port));
-    }
-
-    /**
-     * @codeCoverageIgnore
-     * @param \Swoole\Http\Server $server
-     *
-     * @return void
-     */
-    private function registerOnStartListener(Server $server): void
-    {
-        $server->on('start', function (Server $process) {
-            $this->start($process->master_pid, $process->host, $process->port);
-            $this->saveMasterProcessIdentifier($process);
-        });
-    }
-
-    /**
-     * @codeCoverageIgnore
-     * @param \Swoole\Http\Server $server
-     *
-     * @return void
-     */
-    private function registerOnShutdownListener(Server $server): void
-    {
-        $server->on('shutdown', function () {
-            $this->removeMasterProcessIdentifier();
-        });
-    }
-
-    /**
-     * @codeCoverageIgnore
-     * @param \Swoole\Http\Server $server
-     *
-     * @return void
-     */
-    private function registerOnWorkerStartListener(Server $server): void
-    {
-        $server->on('workerStart', function () {
-            $this->ready();
-        });
-    }
-
-    /**
-     * Registers handler to process client requests.
-     *
-     * @codeCoverageIgnore
-     * @param \Swoole\Http\Server $server
-     *
-     * @return void
-     */
-    private function registerOnRequestListener(Server $server): void
-    {
-        $server->on('request', function (Request $request, Response $response) {
-            // Send secure headers to client
-            $this->header->sent($response);
-
-            // It will be processed the requests of clients (SPA-preferred)
-            // from memory.
-            $body = '';
-            $this->processor->process($body, $request, $response);
-
-            $response->end($body);
-        });
     }
 
     /**
@@ -392,36 +215,5 @@ final class Application
         $conf->load();
 
         return $conf;
-    }
-
-    /**
-     * Save master pid to disk if enabled.
-     *
-     * @param \Swoole\Http\Server $server
-     *
-     * @return void
-     */
-    private function saveMasterProcessIdentifier(Server $server): void
-    {
-        $save = $this->conf->get('server.pid.save');
-        $location = $this->conf->get('server.pid.location');
-
-        if ($save) {
-            file_put_contents($location, $server->master_pid, LOCK_EX);
-        }
-    }
-
-    /**
-     * Remove master pid from disk if it exists.
-     *
-     * @return void
-     */
-    private function removeMasterProcessIdentifier(): void
-    {
-        $location = $this->conf->get('server.pid.location');
-
-        if (file_exists($location)) {
-            unlink($location);
-        }
     }
 }

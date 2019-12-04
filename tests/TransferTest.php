@@ -2,7 +2,7 @@
 
 namespace StaticServer\Tests;
 
-use StaticServer\Transfer;
+use StaticServer\Modifier\Iterator\Transfer;
 
 class TransferTest extends TestCase
 {

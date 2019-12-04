@@ -5,7 +5,7 @@ namespace StaticServer\Tests\Modifier;
 use StaticServer\Modifier\NullGenericModify;
 use StaticServer\Modifier\NullModify;
 use StaticServer\Tests\TestCase;
-use StaticServer\Transfer;
+use StaticServer\Modifier\Iterator\Transfer;
 
 class NullModifyTest extends TestCase
 {

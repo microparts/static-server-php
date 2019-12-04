@@ -4,7 +4,7 @@ namespace StaticServer\Tests;
 
 use InvalidArgumentException;
 use Microparts\Configuration\Configuration;
-use StaticServer\Header;
+use StaticServer\Header\ConvertsHeader;
 use Swoole\Http\Response;
 
 class HeaderTest extends TestCase
@@ -20,7 +20,7 @@ class HeaderTest extends TestCase
             ->method('header')
             ->willReturn(null);
 
-        $h = new Header();
+        $h = new ConvertsHeader();
         $h->setConfiguration($conf);
         $h->prepare();
         $h->sent($response);
@@ -34,14 +34,14 @@ class HeaderTest extends TestCase
         $conf->load();
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Header not supported.');
+        $this->expectExceptionMessage('ConvertsHeader not supported.');
 
         $response = $this->createMock(Response::class);
         $response
             ->method('header')
             ->willReturn(null);
 
-        $h = new Header();
+        $h = new ConvertsHeader();
         $h->setConfiguration($conf);
         $h->prepare();
         $h->sent($response);
@@ -62,7 +62,7 @@ class HeaderTest extends TestCase
             ->method('header')
             ->willReturn(null);
 
-        $h = new Header();
+        $h = new ConvertsHeader();
         $h->setConfiguration($conf);
         $h->prepare();
         $h->sent($response);

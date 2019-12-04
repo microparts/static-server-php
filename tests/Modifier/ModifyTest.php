@@ -4,7 +4,7 @@ namespace StaticServer\Tests\Modifier;
 
 use Microparts\Configuration\Configuration;
 use Psr\Log\NullLogger;
-use StaticServer\Iterator\RecursiveIterator;
+use StaticServer\Modifier\Iterator\RecursiveIterator;
 use StaticServer\Modifier\Modify;
 use StaticServer\Modifier\ModifyInterface;
 use StaticServer\Modifier\NullModify;
@@ -23,8 +23,8 @@ class ModifyTest extends TestCase
 
         $it = new RecursiveIterator(new NullLogger());
         $it->setConfiguration($conf);
-        /** @var \StaticServer\Transfer[] $array */
-        $array = iterator_to_array($m->modify($it->iterate()));
+        /** @var \StaticServer\Modifier\Iterator\Transfer[] $array */
+        $array = iterator_to_array($m->modifyAndSaveToDisk($it->iterate()));
 
         $this->assertInstanceOf(ModifyInterface::class, $m->getModifiers()[0]);
         $this->assertEquals('ModifyTest.php', $array[0]->getFilename());

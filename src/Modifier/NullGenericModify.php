@@ -9,10 +9,10 @@ final class NullGenericModify implements GenericModifyInterface
      *
      * @param iterable $files
      *
-     * @return iterable
+     * @return void
      */
-    public function modify(iterable $files): iterable
+    public function modifyAndSaveToDisk(iterable $files): void
     {
-        yield from $files;
+        // black hole
     }
 }

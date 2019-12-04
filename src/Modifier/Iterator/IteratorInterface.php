@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace StaticServer\Iterator;
+namespace StaticServer\Modifier\Iterator;
 
 interface IteratorInterface
 {

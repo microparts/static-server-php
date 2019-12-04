@@ -4,7 +4,7 @@ namespace StaticServer\Modifier;
 
 use Microparts\Configuration\ConfigurationAwareInterface;
 use Microparts\Configuration\ConfigurationAwareTrait;
-use StaticServer\Transfer;
+use StaticServer\Modifier\Iterator\Transfer;
 
 final class PrepareConfigModify implements ModifyInterface, ConfigurationAwareInterface
 {
@@ -40,23 +40,19 @@ final class PrepareConfigModify implements ModifyInterface, ConfigurationAwareIn
      * Updates this file, where $changed object may be contains changes
      * from previous Modifier and where $origin object contains first
      * state of original file.
-     *
      * Prepares __config.js file from stub for inject it to server.index file in future.
      *
      * @param Transfer $changed
-     * @param Transfer $origin
-     *
+     * @param \StaticServer\Modifier\Iterator\Transfer $origin
      * @return Transfer
      */
     public function __invoke(Transfer $changed, Transfer $origin): Transfer
     {
-        if ($origin->getFilename() !== '__config.js') {
+        if ($origin->filename !== '__config.js') {
             return $changed;
         }
 
-        $changed->setContent(
-            $this->prepare($changed)
-        );
+        $changed->content = $this->prepare($changed);
 
         return $changed;
     }
@@ -64,8 +60,7 @@ final class PrepareConfigModify implements ModifyInterface, ConfigurationAwareIn
     /**
      * Prepares __config.js file... I like writing documentation [sad smile].
      *
-     * @param \StaticServer\Transfer $transfer
-     *
+     * @param \StaticServer\Modifier\Iterator\Transfer $transfer
      * @return string
      */
     private function prepare(Transfer $transfer): string
@@ -74,7 +69,7 @@ final class PrepareConfigModify implements ModifyInterface, ConfigurationAwareIn
         $message = sprintf($format, $this->stage, $this->vcsSha1);
 
         return sprintf(
-            trim($transfer->getContent()),
+            trim($transfer->content),
             $this->stage,
             json_encode($this->cleanupServerKeyFromConfig()),
             $this->vcsSha1,

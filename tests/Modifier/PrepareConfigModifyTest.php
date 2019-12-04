@@ -5,7 +5,7 @@ namespace StaticServer\Tests\Modifier;
 use Microparts\Configuration\Configuration;
 use StaticServer\Modifier\SecurityTxtModify;
 use StaticServer\Tests\TestCase;
-use StaticServer\Transfer;
+use StaticServer\Modifier\Iterator\Transfer;
 
 class PrepareConfigModifyTest extends TestCase
 {

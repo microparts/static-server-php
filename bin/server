@@ -4,6 +4,7 @@
 use StaticServer\Console\DumpConfigCommand;
 use StaticServer\Console\ReloadServerCommand;
 use StaticServer\Console\RunServerCommand;
+use StaticServer\Console\SignalHandler;
 use Symfony\Component\Console\Application;
 
 $locations = [
@@ -19,7 +20,15 @@ foreach ($locations as $file) {
     }
 }
 
-$app = new Application('Static server', '1.2.0');
+pcntl_async_signals(true);
+
+$sig = new SignalHandler();
+pcntl_signal(SIGTERM, [$sig, 'handle']);
+pcntl_signal(SIGINT, [$sig, 'handle']);
+pcntl_signal(SIGQUIT, [$sig, 'handle']);
+pcntl_signal(SIGUSR1, [$sig, 'handle']);
+
+$app = new Application('Static server', '2.0.0');
 $app->add(new RunServerCommand());
 $app->add(new DumpConfigCommand());
 $app->add(new ReloadServerCommand());

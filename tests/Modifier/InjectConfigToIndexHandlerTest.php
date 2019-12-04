@@ -7,7 +7,7 @@ use Microparts\Configuration\Configuration;
 use Microparts\Configuration\ConfigurationInterface;
 use StaticServer\Modifier\InjectConfigFileToIndexModify;
 use StaticServer\Tests\TestCase;
-use StaticServer\Transfer;
+use StaticServer\Modifier\Iterator\Transfer;
 
 class InjectConfigToIndexHandlerTest extends TestCase
 {
@@ -70,7 +70,7 @@ class InjectConfigToIndexHandlerTest extends TestCase
     /**
      * @param string $config
      * @param string $location
-     * @return \StaticServer\Transfer
+     * @return \StaticServer\Modifier\Iterator\Transfer
      */
     private function newInjectHandle(string $config, string $location = '/empty_head/index.html'): Transfer
     {

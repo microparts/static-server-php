@@ -6,8 +6,8 @@ use InvalidArgumentException;
 use Microparts\Configuration\Configuration;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
-use StaticServer\Iterator\RecursiveIterator;
-use StaticServer\Transfer;
+use StaticServer\Modifier\Iterator\RecursiveIterator;
+use StaticServer\Modifier\Iterator\Transfer;
 
 class RecursiveIteratorTest extends TestCase
 {
@@ -23,7 +23,7 @@ class RecursiveIteratorTest extends TestCase
 
         $transfer = null;
         foreach ($it->iterate() as $item) {
-            /** @var Transfer $item */
+            /** @var \StaticServer\Modifier\Iterator\Transfer $item */
             $this->assertInstanceOf(Transfer::class, $item);
             if ($item->getFilename() === 'bla-bla.txt') {
                 $transfer = $item;
@@ -46,7 +46,7 @@ class RecursiveIteratorTest extends TestCase
 
         $it = new RecursiveIterator(new NullLogger());
         $it->setConfiguration($conf);
-        /** @var Transfer[] $array */
+        /** @var \StaticServer\Modifier\Iterator\Transfer[] $array */
         iterator_to_array($it->iterate());
     }
 }

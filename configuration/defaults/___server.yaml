@@ -4,20 +4,20 @@ defaults:
     port: 8080
     root: /app
     index: index.html
-    log_info: "%%cSTAGE=%s SHA1=%s; %%cSecurity bugs: security@teamc.io, Job/partnership: work@teamc.io"
-    security_txt:
-      contact: "security@teamc.io"
-      preferred_lang: "en, ru"
-    config:
-      # config.inject Values: head, before_script
+    modify:
+      enabled: true # Enables or disables files modifying to use a frontend app with yaml configuration.
+      root: /app/modified # Location where changed files from server.root will be located.
+      # modify.inject Values: head, before_script
       # head -> Injects the __config.js to top of <head> tag. It will be block content rendering, so not recommended.
       # before_script -> Injects the __config.js before first <script> tag in DOM document. Better than `head` variant.
       inject: before_script # head/before_script
-    swoole:
-      log_level: 0 # warning level, 0 debug
-      buffer_output_size: 33554432 # 32 * 1024 * 1024
-      open_tcp_nodelay: 1
-    pid:
-      location: /var/run/server.pid
-      save: true
+    prerender:
+      enabled: false
+      url: null
+    log_info: "%%cSTAGE=%s SHA1=%s; %%cSecurity bugs: security@spacetab.io, Job/partnership: work@spacetab.io"
+    security_txt:
+      contact: "security@spacetab.io"
+      preferred_lang: "en, ru"
+
+
 

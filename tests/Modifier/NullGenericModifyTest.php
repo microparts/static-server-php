@@ -9,7 +9,7 @@ class NullGenericModifyTest extends TestCase
 {
     public function testNullGenericModify()
     {
-        foreach ((new NullGenericModify())->modify(['foobar']) as $item) {
+        foreach ((new NullGenericModify())->modifyAndSaveToDisk(['foobar']) as $item) {
             $this->assertEquals('foobar', $item);
         }
     }

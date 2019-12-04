@@ -8,7 +8,7 @@ use InvalidArgumentException;
 use Masterminds\HTML5;
 use Microparts\Configuration\ConfigurationAwareInterface;
 use Microparts\Configuration\ConfigurationAwareTrait;
-use StaticServer\Transfer;
+use StaticServer\Modifier\Iterator\Transfer;
 
 final class InjectConfigFileToIndexModify implements ModifyInterface, ConfigurationAwareInterface
 {
@@ -56,26 +56,25 @@ final class InjectConfigFileToIndexModify implements ModifyInterface, Configurat
      * it parse DOM document with two strategies: `head` and `before_script`.
      * See constants to learn more.
      *
-     * @param \StaticServer\Transfer $changed
-     * @param \StaticServer\Transfer $origin
-     *
-     * @return \StaticServer\Transfer
+     * @param \StaticServer\Modifier\Iterator\Transfer $changed
+     * @param \StaticServer\Modifier\Iterator\Transfer $origin
+     * @return \StaticServer\Modifier\Iterator\Transfer
      */
     public function __invoke(Transfer $changed, Transfer $origin): Transfer
     {
-        if ($changed->getFilename() !== $this->configuration->get('server.index')) {
+        if ($changed->filename !== $this->configuration->get('server.index')) {
             return $changed;
         }
 
-        $dom = $this->html5->loadHTML($changed->getContent());
+        $dom = $this->html5->loadHTML($changed->content);
         $script = $dom->createElement('script');
         $script->setAttribute('src', $this->location);
 
-        if ($this->configuration->get('server.config.inject') === self::INJECT_TO_HEAD) {
+        if ($this->configuration->get('server.modify.inject') === self::INJECT_TO_HEAD) {
             return $this->toTopOfHead($dom, $script, $changed);
         }
 
-        if ($this->configuration->get('server.config.inject') === self::INJECT_BEFORE_SCRIPT) {
+        if ($this->configuration->get('server.modify.inject') === self::INJECT_BEFORE_SCRIPT) {
             return $this->beforeFirstScript($dom, $script, $changed);
         }
 
@@ -86,15 +85,13 @@ final class InjectConfigFileToIndexModify implements ModifyInterface, Configurat
      * Updates this file, where $changed object may be contains changes
      * from previous Modifier and where $origin object contains first
      * state of original file.
-     *
      * Injects the __config.js to top of <head> tag.
      * If <head> tag not found injecting will be skipped.
      *
      * @param \DOMDocument $dom
      * @param \DOMElement $script
-     * @param \StaticServer\Transfer $changed
-     *
-     * @return \StaticServer\Transfer
+     * @param \StaticServer\Modifier\Iterator\Transfer $changed
+     * @return \StaticServer\Modifier\Iterator\Transfer
      */
     private function toTopOfHead(DOMDocument $dom, DOMElement $script, Transfer $changed): Transfer
     {
@@ -121,9 +118,7 @@ final class InjectConfigFileToIndexModify implements ModifyInterface, Configurat
             $head->item(0)->appendChild($script);
         }
 
-        $changed->setContent(
-            $this->html5->saveHTML($dom)
-        );
+        $changed->content = $this->html5->saveHTML($dom);
 
         return $changed;
     }
@@ -133,9 +128,8 @@ final class InjectConfigFileToIndexModify implements ModifyInterface, Configurat
      *
      * @param \DOMDocument $dom
      * @param \DOMElement $script
-     * @param \StaticServer\Transfer $changed
-     *
-     * @return \StaticServer\Transfer
+     * @param \StaticServer\Modifier\Iterator\Transfer $changed
+     * @return \StaticServer\Modifier\Iterator\Transfer
      */
     private function beforeFirstScript(DOMDocument $dom, DOMElement $script, Transfer $changed): Transfer
     {
@@ -151,9 +145,7 @@ final class InjectConfigFileToIndexModify implements ModifyInterface, Configurat
         $first = $scripts->item(0);
         $first->parentNode->insertBefore($script, $first);
 
-        $changed->setContent(
-            $this->html5->saveHTML($dom)
-        );
+        $changed->content = $this->html5->saveHTML($dom);
 
         return $changed;
     }

@@ -43,7 +43,7 @@ class SpaProcessorTest extends TestCase
         $spa->clearCache();
         $spa->prepare();
 
-        $spa->load($m->modify([]));
+        $spa->load($m->modifyAndSaveToDisk([]));
 
         $request = $this->createMock(Request::class);
         $request->server['request_uri'] = $uri;

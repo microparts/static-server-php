@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace StaticServer\Iterator;
+namespace StaticServer\Modifier\Iterator;
 
 use InvalidArgumentException;
 use Microparts\Configuration\ConfigurationAwareInterface;
@@ -8,7 +8,6 @@ use Microparts\Configuration\ConfigurationAwareTrait;
 use Psr\Log\LoggerInterface;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
-use StaticServer\Transfer;
 
 final class RecursiveIterator implements IteratorInterface, ConfigurationAwareInterface
 {
@@ -17,7 +16,7 @@ final class RecursiveIterator implements IteratorInterface, ConfigurationAwareIn
     /**
      * @var \Psr\Log\LoggerInterface
      */
-    private $logger;
+    private LoggerInterface $logger;
 
     /**
      * RecursiveIterator constructor.
@@ -53,13 +52,14 @@ final class RecursiveIterator implements IteratorInterface, ConfigurationAwareIn
 
             $this->logger->debug('Processing file: ' . $item->getRealPath());
 
-            yield new Transfer(
-                $item->getFilename(),
-                $item->getRealPath(),
-                $item->getExtension(),
-                substr($item->getRealPath(), strlen($path)),
-                file_get_contents($item->getRealPath())
-            );
+            $transfer = new Transfer();
+            $transfer->filename  = $item->getFilename();
+            $transfer->realpath  = $item->getRealPath();
+            $transfer->extension = $item->getExtension();
+            $transfer->location  = substr($item->getRealPath(), strlen($path));
+            $transfer->content   = file_get_contents($item->getRealPath());
+
+            yield $transfer;
         }
     }
 

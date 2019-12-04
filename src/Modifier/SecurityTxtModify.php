@@ -4,7 +4,7 @@ namespace StaticServer\Modifier;
 
 use Microparts\Configuration\ConfigurationAwareInterface;
 use Microparts\Configuration\ConfigurationAwareTrait;
-use StaticServer\Transfer;
+use StaticServer\Modifier\Iterator\Transfer;
 
 final class SecurityTxtModify implements ModifyInterface, ConfigurationAwareInterface
 {
@@ -24,15 +24,15 @@ final class SecurityTxtModify implements ModifyInterface, ConfigurationAwareInte
      */
     public function __invoke(Transfer $changed, Transfer $origin): Transfer
     {
-        if ($origin->getFilename() !== 'security.txt') {
+        if ($origin->filename !== 'security.txt') {
             return $changed;
         }
 
-        $changed->setContent(sprintf(
-            trim($changed->getContent()),
+        $changed->content = sprintf(
+            trim($changed->content),
             $this->configuration->get('server.security_txt.contact'),
             $this->configuration->get('server.security_txt.preferred_lang'),
-        ));
+        );
 
         return $changed;
     }
