@@ -5,15 +5,17 @@ namespace StaticServer\Modifier;
 use InvalidArgumentException;
 use Microparts\Configuration\ConfigurationAwareInterface;
 use Microparts\Configuration\ConfigurationAwareTrait;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use SplFileInfo;
 use StaticServer\Modifier\Iterator\Transfer;
 use Symfony\Component\Filesystem\Filesystem;
 
-final class Modify implements GenericModifyInterface, ConfigurationAwareInterface
+final class Modify implements GenericModifyInterface, ConfigurationAwareInterface, LoggerAwareInterface
 {
-    use ConfigurationAwareTrait;
+    use ConfigurationAwareTrait, LoggerAwareTrait;
 
     /**
      * @var array
@@ -102,6 +104,7 @@ final class Modify implements GenericModifyInterface, ConfigurationAwareInterfac
     private function removeModifiedFilesIfExists(string $modifyPath): void
     {
         if ($this->filesystem->exists($modifyPath)) {
+            $this->logger->debug(sprintf('Modify. Files by path [%s] found and will be deleted', $modifyPath));
             $this->filesystem->remove($modifyPath);
         }
     }
@@ -123,6 +126,8 @@ final class Modify implements GenericModifyInterface, ConfigurationAwareInterfac
             $item->extension = $file->getExtension();
             $item->location  = $location;
             $item->content   = $contents;
+
+            $this->logger->debug(sprintf('Modify. Starting modify the ghost file: %s', $path));
 
             $results[] = array_reduce($this->modifiers, function ($carry, ModifyInterface $handler) use ($item) {
                 if ($handler instanceof ConfigurationAwareInterface) {

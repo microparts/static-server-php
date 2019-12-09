@@ -10,4 +10,4 @@ require_once __DIR__ . '/vendor/autoload.php';
 // VCS_SHA1 – build commit sha1 for debug
 // LOG_LEVEL – level of logging. Important! For swoole server, log_level needs to be set up in the `server.yaml` configuration file.
 
-Server::new()->run();
+Server::fromGlobals()->run();

@@ -17,7 +17,6 @@ class RunServerCommand extends Command
             ->setName('run')
             ->setDescription('Run server')
             ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Dry run command without server starting.')
-            ->addOption('silent', null, InputOption::VALUE_NONE, 'Disable any output.')
             ->setHelp('Example of usage: `server run`. If u want to change starting host or port, please change the __server_*.yaml configuration files.');
     }
 
@@ -31,7 +30,6 @@ class RunServerCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $server = $input->getOption('silent') ? Server::silent() : Server::new();
-        $server->run($input->getOption('dry-run'));
+        Server::fromGlobals()->run($input->getOption('dry-run'));
     }
 }

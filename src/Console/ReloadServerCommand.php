@@ -31,6 +31,6 @@ class ReloadServerCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        Server::new()->reload();
+        Server::fromGlobals()->reload();
     }
 }

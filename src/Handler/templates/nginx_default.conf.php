@@ -192,6 +192,10 @@ http {
         root   "<?=$serverRoot?>";
         index  "<?=$serverIndex?>";
 
+        <?php foreach($headers as $name => $value):?>
+            add_header "<?=$name?>" "<?=addslashes($value)?>";
+        <?php endforeach;?>
+
         location /healthcheck {
             add_header Content-Type text/plain;
             return 200 "ok";
@@ -234,12 +238,12 @@ http {
                 }
             }
         <?php else:?>
+            location /index.html {
+                add_header Cache-Control "no-store, no-cache, must-revalidate";
+                try_files $uri $uri/ @rewrites;
+            }
+
             location / {
-                <?php foreach($headers as $name => $value):?>
-                    <?php if ($name !== 'Cache-Control' || $name !== 'Pragma'):?>
-                        add_header "<?=$name?>" "<?=addslashes($value)?>";
-                    <?php endif;?>
-                <?php endforeach;?>
                 try_files $uri $uri/ @rewrites;
             }
 
@@ -249,8 +253,7 @@ http {
 
             location ~* \.(js|css|json|xml|webm|png|jpg|jpeg|gif|pdf|doc|docx|txt|ico|rss|zip|mp3|rar|exe|wmv|avi|ppt|pptx|mpg|mpeg|tif|wav|mov|psd|ai|xls|xlsx|mp4|m4a|swf|dat|dmg|iso|flv|m4v|torrent|ttf|woff|svg|eot) {
                 expires 24h;
-                add_header Pragma "<?=addslashes($headers['Pragma'])?>";
-                add_header Cache-Control "<?=addslashes($headers['Cache-Control'])?>";
+                add_header Cache-Control "public, must-revalidate, proxy-revalidate, max-age=86400";
             }
         <?php endif;?>
     }

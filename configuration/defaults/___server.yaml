@@ -15,6 +15,9 @@ defaults:
       enabled: false
       url: null
     log_info: "%%cSTAGE=%s SHA1=%s; %%cSecurity bugs: security@spacetab.io, Job/partnership: work@spacetab.io"
+    logger:
+      enabled: true
+      level: info # debug, info, notice, warning, critical, emergency
     security_txt:
       contact: "security@spacetab.io"
       preferred_lang: "en, ru"

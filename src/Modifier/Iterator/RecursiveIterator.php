@@ -5,28 +5,14 @@ namespace StaticServer\Modifier\Iterator;
 use InvalidArgumentException;
 use Microparts\Configuration\ConfigurationAwareInterface;
 use Microparts\Configuration\ConfigurationAwareTrait;
-use Psr\Log\LoggerInterface;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 
-final class RecursiveIterator implements IteratorInterface, ConfigurationAwareInterface
+final class RecursiveIterator implements IteratorInterface, ConfigurationAwareInterface, LoggerAwareInterface
 {
-    use ConfigurationAwareTrait;
-
-    /**
-     * @var \Psr\Log\LoggerInterface
-     */
-    private LoggerInterface $logger;
-
-    /**
-     * RecursiveIterator constructor.
-     *
-     * @param \Psr\Log\LoggerInterface $logger
-     */
-    public function __construct(LoggerInterface $logger)
-    {
-        $this->logger = $logger;
-    }
+    use ConfigurationAwareTrait, LoggerAwareTrait;
 
     /**
      * Iterate files in server.root.
@@ -50,7 +36,7 @@ final class RecursiveIterator implements IteratorInterface, ConfigurationAwareIn
                 continue;
             }
 
-            $this->logger->debug('Processing file: ' . $item->getRealPath());
+            $this->logger->debug('Iterator. Processing real file: ' . $item->getRealPath());
 
             $transfer = new Transfer();
             $transfer->filename  = $item->getFilename();

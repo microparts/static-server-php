@@ -16,14 +16,14 @@ class SignalHandler
             case SIGINT:
             case SIGQUIT:
             case SIGSTOP:
-                Server::new()->stop();
+                Server::fromGlobals()->stop();
                 exit;
                 break;
             case SIGUSR1:
-                Server::new()->reload();
+                Server::fromGlobals()->reload();
                 break;
             default:
-                Server::new()->stop();
+                Server::fromGlobals()->stop();
         }
     }
 }

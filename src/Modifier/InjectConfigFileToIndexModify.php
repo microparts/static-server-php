@@ -31,14 +31,14 @@ final class InjectConfigFileToIndexModify implements ModifyInterface, Configurat
      *
      * @var string
      */
-    private $location;
+    private string $location;
 
     /**
      * Utility to parse and modify html code.
      *
      * @var \Masterminds\HTML5
      */
-    private $html5;
+    private HTML5 $html5;
 
     /**
      * InjectConfigFileToIndexModify constructor.

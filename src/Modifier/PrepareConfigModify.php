@@ -15,14 +15,14 @@ final class PrepareConfigModify implements ModifyInterface, ConfigurationAwareIn
      *
      * @var string
      */
-    private $stage;
+    private string $stage;
 
     /**
      * Application SHA1 from git.
      *
      * @var string
      */
-    private $vcsSha1;
+    private string $vcsSha1;
 
     /**
      * PrepareConfigModify constructor.

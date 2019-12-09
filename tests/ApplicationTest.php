@@ -33,7 +33,7 @@ class ApplicationTest extends TestCase
                 putenv('STAGE=tests');
                 putenv("CONFIG_PATH=$path");
                 putenv("VCS_SHA1=test");
-                Server::new()->dryRun();
+                Server::fromGlobals()->dryRun();
             } catch (Throwable $e) {
                 printf($e);
                 $this->assertFalse((bool) $e);
