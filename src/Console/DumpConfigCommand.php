@@ -28,6 +28,6 @@ class DumpConfigCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        Server::silent()->dump();
+        Server::fromGlobals()->dump();
     }
 }
