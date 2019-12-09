@@ -187,16 +187,21 @@ final class Modify implements GenericModifyInterface, ConfigurationAwareInterfac
             throw new InvalidArgumentException('Config Error: server.root directory not found or it is not directory.');
         }
 
-        $directoryIterator = new RecursiveDirectoryIterator($rootPath);
+        $directoryIterator = new RecursiveDirectoryIterator($rootPath, RecursiveDirectoryIterator::SKIP_DOTS);
         $iterator = new RecursiveIteratorIterator($directoryIterator, RecursiveIteratorIterator::SELF_FIRST);
 
         foreach ($iterator as $item) {
             /** @var RecursiveDirectoryIterator $item */
             /** @var RecursiveDirectoryIterator $iterator */
+
+            $filename = $modifyPath . DIRECTORY_SEPARATOR . $iterator->getSubPathname();
+
             if ($item->isDir()) {
-                $this->filesystem->mkdir($modifyPath . DIRECTORY_SEPARATOR . $iterator->getSubPathname());
+                $this->logger->debug(sprintf('Modify. Copy original file, create dir: %s', $filename));
+                $this->filesystem->mkdir($filename);
             } else {
-                $this->filesystem->copy($item, $modifyPath . DIRECTORY_SEPARATOR . $iterator->getSubPathname());
+                $this->logger->debug(sprintf('Modify. Copy original file, copy file from: %s to %s', $item, $filename));
+                $this->filesystem->copy($item, $filename);
             }
         }
     }

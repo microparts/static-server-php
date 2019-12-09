@@ -42,7 +42,9 @@ class NginxHandler extends AbstractHandler
             'serverPort' => $this->configuration->get('server.port'),
             'serverHost' => $this->configuration->get('server.host'),
             'prerenderEnabled' => $this->configuration->get('server.prerender.enabled'),
-            'prerenderUrl' => $this->configuration->get('server.prerender.url'),
+            'prerenderUrl' => rtrim($this->configuration->get('server.prerender.url'), '/'),
+            'prerenderToken' => $this->configuration->get('server.prerender.token'),
+            'prerenderHost' => rtrim($this->configuration->get('server.prerender.host'), '/'),
             'headers' => $header->convert($this->configuration),
             'connProcMethod' => $this->getConnectionProcessingMethod()
         ]);

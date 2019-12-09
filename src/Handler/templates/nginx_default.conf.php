@@ -185,6 +185,8 @@ http {
     # number of requests client can make over keep-alive -- for testing environment
     keepalive_requests 100000;
 
+    proxy_cache_path  /tmp  levels=1:2    keys_zone=STATIC:10m inactive=24h  max_size=128m;
+
     server {
         listen <?=$serverPort?>;
         server_name <?=$serverHost?>;
@@ -202,15 +204,32 @@ http {
         }
 
         <?php if ($prerenderEnabled):?>
+            location /index.html {
+                add_header Cache-Control "no-store, no-cache, must-revalidate";
+                try_files $uri @prerender;
+            }
+
             location / {
                 try_files $uri @prerender;
             }
 
             location @prerender {
+                <?php if ($prerenderEnabled && $prerenderToken):?>
+                  proxy_set_header X-Prerender-Token "<?=$prerenderToken?>";
+                <?php endif;?>
+
+                proxy_read_timeout 120s;
+                proxy_intercept_errors on;
+                proxy_buffering        on;
+                proxy_cache            STATIC;
+                proxy_cache_valid      200  2h;
+                proxy_cache_use_stale  error timeout invalid_header updating http_500 http_502 http_503 http_504;
+
                 set $prerender 0;
-                if ($http_user_agent ~* "googlebot|bingbot|yandex|baiduspider|twitterbot|facebookexternalhit|rogerbot|linkedinbot|embedly|quora link preview|showyoubot|outbrain|pinterest\/0\.|pinterestbot|slackbot|vkShare|W3C_Validator|whatsapp") {
+                if ($http_user_agent ~* "googlebot|bingbot|yandex|baiduspider|twitterbot|facebookexternalhit|rogerbot|linkedinbot|embedly|quora link preview|showyoubot|outbrain|pinterest\/0\.|pinterestbot|slackbot|vkShare|W3C_Validator|whatsapp|telegram|bot") {
                     set $prerender 1;
                 }
+
                 if ($args ~ "_escaped_fragment_") {
                     set $prerender 1;
                 }
@@ -221,20 +240,22 @@ http {
 
                 if ($uri ~* "\.(js|css|xml|png|jpg|jpeg|gif|pdf|doc|docx|txt|ico|rss|zip|mp3|rar|exe|wmv|avi|ppt|pptx|mpg|mpeg|tif|wav|mov|psd|ai|xls|xlsx|mp4|m4a|swf|dat|dmg|iso|flv|m4v|torrent|ttf|woff|svg|eot)") {
                     set $prerender 0;
+                    expires 24h;
+                    add_header Cache-Control "public, must-revalidate, proxy-revalidate, max-age=86400";
                 }
 
                 # resolve using Google's DNS/Cloudflare server to force DNS resolution and prevent caching of IPs
-                resolver 8.8.8.8, 8.8.4.4, 1.1.1.1, 1.0.0.1;
+                resolver 8.8.8.8 8.8.4.4 1.1.1.1 1.0.0.1;
 
                 if ($prerender = 1) {
                     #setting prerender as a variable forces DNS resolution since nginx caches IPs and doesnt play well with load balancing
-                    set $prerender "<?=$prerenderUrl?>";
-                    rewrite .* /$scheme://$host$request_uri? break;
-                    proxy_pass http://$prerender;
+                    set $proxyprerender "<?=$prerenderUrl?>";
+                    rewrite .* /<?=$prerenderHost?>$request_uri? break;
+                    proxy_pass https://$proxyprerender;
                 }
 
                 if ($prerender = 0) {
-                    rewrite .* /index.html break;
+                    rewrite ^(.+)$ /index.html last;
                 }
             }
         <?php else:?>
