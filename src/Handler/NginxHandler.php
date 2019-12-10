@@ -42,9 +42,9 @@ class NginxHandler extends AbstractHandler
             'serverPort' => $this->configuration->get('server.port'),
             'serverHost' => $this->configuration->get('server.host'),
             'prerenderEnabled' => $this->configuration->get('server.prerender.enabled'),
-            'prerenderUrl' => rtrim($this->configuration->get('server.prerender.url'), '/'),
+            'prerenderUrl' => $this->getHostWithoutTrailingSlash('server.prerender.url'),
             'prerenderToken' => $this->configuration->get('server.prerender.token'),
-            'prerenderHost' => rtrim($this->configuration->get('server.prerender.host'), '/'),
+            'prerenderHost' => $this->getHostWithoutTrailingSlash('server.prerender.host'),
             'headers' => $header->convert($this->configuration),
             'connProcMethod' => $this->getConnectionProcessingMethod()
         ]);
@@ -81,6 +81,19 @@ class NginxHandler extends AbstractHandler
     public function stop(): void
     {
         $this->runProcess(['nginx', '-c', $this->generatedConfig, '-s', 'stop']);
+    }
+
+    /**
+     * @param string $key
+     * @return bool|string
+     */
+    private function getHostWithoutTrailingSlash(string $key)
+    {
+        if (empty($this->configuration->get($key))) {
+            return false;
+        }
+
+        return rtrim($this->configuration->get($key), '/');
     }
 
     /**
