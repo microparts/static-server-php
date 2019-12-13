@@ -4,6 +4,12 @@ namespace StaticServer\Console;
 
 use StaticServer\Server;
 
+/**
+ * Class SignalHandler
+ *
+ * @codeCoverageIgnore
+ * @package StaticServer\Console
+ */
 class SignalHandler
 {
     /**

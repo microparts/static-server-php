@@ -8,6 +8,12 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
+/**
+ * Class ReloadServerCommand
+ *
+ * @codeCoverageIgnore
+ * @package StaticServer\Console
+ */
 class ReloadServerCommand extends Command
 {
 
