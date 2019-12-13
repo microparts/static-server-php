@@ -147,6 +147,25 @@ http {
 
     server_tokens off;
 
+    brotli on;
+    brotli_static on;
+    brotli_types
+        text/css
+        text/javascript
+        text/xml
+        text/plain
+        text/x-component
+        application/javascript
+        application/x-javascript
+        application/json
+        application/xml
+        application/rss+xml
+        application/atom+xml
+        font/truetype
+        font/opentype
+        application/vnd.ms-fontobject
+        image/svg+xml;
+
     # reduce the data that needs to be sent over network -- for testing environment
     gzip on;
     gzip_min_length 10240;
