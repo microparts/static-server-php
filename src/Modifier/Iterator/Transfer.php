@@ -2,6 +2,12 @@
 
 namespace StaticServer\Modifier\Iterator;
 
+/**
+ * Class Transfer
+ *
+ * @codeCoverageIgnore
+ * @package StaticServer\Modifier\Iterator
+ */
 final class Transfer
 {
     public string $filename  = '';

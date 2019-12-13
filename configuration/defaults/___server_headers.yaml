@@ -17,7 +17,6 @@ defaults:
       referer_policy: no-referrer
       pragma: public
       cache_control: public, must-revalidate, proxy-revalidate
-      frame_options: sameorigin
       xss_protection: 1; mode=block
       x_content_type: nosniff
       x_content_type_options: nosniff

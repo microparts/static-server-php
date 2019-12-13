@@ -2,5 +2,7 @@ tests_compress_off:
   server:
     port: 8081
     root: ./tests/example_dist/vue
+    modify:
+      root: ./tests/example_dist/vue/modified
     compression:
       enabled: false

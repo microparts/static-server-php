@@ -72,16 +72,6 @@ final class Application
     }
 
     /**
-     * Get the server configuration.
-     *
-     * @return \Microparts\Configuration\ConfigurationInterface
-     */
-    public function getConfiguration(): ConfigurationInterface
-    {
-        return $this->conf;
-    }
-
-    /**
      * Dry run without start of server.
      *
      * @return void

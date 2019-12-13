@@ -2,6 +2,9 @@
 
 namespace StaticServer;
 
+use Microparts\Configuration\Configuration;
+use Microparts\Configuration\ConfigurationInterface;
+
 final class Server
 {
     /**
@@ -62,7 +65,8 @@ final class Server
      */
     public function dump(): void
     {
-        $conf = $this->app->getConfiguration();
+        $conf = Configuration::auto();
+        $conf->load();
 
         printf("CONFIG_PATH = %s\n", $conf->getPath());
         printf("STAGE = %s\n", $conf->getStage());

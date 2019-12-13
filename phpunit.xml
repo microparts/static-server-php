@@ -22,6 +22,7 @@
             <exclude>
                 <directory suffix=".php">./tests</directory>
                 <directory suffix=".php">./vendor</directory>
+                <file>src/Handler/templates/nginx_default.conf.php</file>
             </exclude>
         </whitelist>
     </filter>

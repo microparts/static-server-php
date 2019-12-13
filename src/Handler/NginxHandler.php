@@ -3,6 +3,7 @@
 namespace StaticServer\Handler;
 
 use League\Plates\Engine;
+use LogicException;
 use StaticServer\Header\HeaderInterface;
 
 class NginxHandler extends AbstractHandler
@@ -81,6 +82,14 @@ class NginxHandler extends AbstractHandler
 
     public function reload(): void
     {
+        if (file_exists($this->options['config'])) {
+            throw new LogicException('Can\'t reload server. Pid file not found.');
+        }
+
+        if (empty(file_get_contents($this->options['config']))) {
+            throw new LogicException('Can\'t reload server. Pid file is empty.');
+        }
+
         $this->runProcess(['nginx', '-c', $this->options['config'], '-s', 'reload']);
     }
 
@@ -103,6 +112,7 @@ class NginxHandler extends AbstractHandler
     }
 
     /**
+     * @codeCoverageIgnore
      * @return string
      */
     private function getConnectionProcessingMethod(): string

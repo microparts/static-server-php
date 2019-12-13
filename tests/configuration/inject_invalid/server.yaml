@@ -1,6 +1,7 @@
 inject_invalid:
   server:
-    config:
-      inject: invalid
     port: 8081
     root: ./tests/example_dist/vue
+    modify:
+      root: ./tests/example_dist/vue/modified
+      inject: invalid

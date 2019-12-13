@@ -2,6 +2,12 @@
 
 namespace StaticServer\Modifier;
 
+/**
+ * Class NullGenericModify
+ *
+ * @codeCoverageIgnore
+ * @package StaticServer\Modifier
+ */
 final class NullGenericModify implements GenericModifyInterface
 {
     /**
