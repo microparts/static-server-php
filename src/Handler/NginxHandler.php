@@ -14,14 +14,14 @@ class NginxHandler extends AbstractHandler
     private Engine $templates;
 
     /**
-     * @var array
+     * @var array<string, string>
      */
     private array $options;
 
     /**
      * NginxHandler constructor.
      *
-     * @param array $options
+     * @param array<string, string> $options
      */
     public function __construct(array $options = [])
     {

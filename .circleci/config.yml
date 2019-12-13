@@ -7,6 +7,10 @@ jobs:
       - run:
           name: Create testing environment & Run tests
           command: docker build -f Dockerfile.test -t unit:latest .
+#      - run:
+#          name: Static analyse
+#          command: |
+#            vendor/bin/phpstan analyse -l 7 src
       - run:
           name: Send code coverage report to Codecov
           command: |

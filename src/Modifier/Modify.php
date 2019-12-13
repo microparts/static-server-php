@@ -18,12 +18,12 @@ final class Modify implements GenericModifyInterface, ConfigurationAwareInterfac
     use ConfigurationAwareTrait, LoggerAwareTrait;
 
     /**
-     * @var array
+     * @var array<\StaticServer\Modifier\ModifyInterface>
      */
     private array $modifiers = [];
 
     /**
-     * @var Transfer[]
+     * @var array<string>
      */
     private array $ghosts = [];
 
@@ -41,7 +41,7 @@ final class Modify implements GenericModifyInterface, ConfigurationAwareInterfac
     }
 
     /**
-     * @param $handler
+     * @param \StaticServer\Modifier\ModifyInterface $handler
      *
      * @return void
      */
@@ -69,7 +69,7 @@ final class Modify implements GenericModifyInterface, ConfigurationAwareInterfac
     }
 
     /**
-     * @return array
+     * @return array<\StaticServer\Modifier\ModifyInterface>
      */
     public function getModifiers(): array
     {
@@ -80,7 +80,7 @@ final class Modify implements GenericModifyInterface, ConfigurationAwareInterfac
      * Method for modify incoming files
      * or add new one. Then, saves to disk without override original files.
      *
-     * @param iterable $files
+     * @param iterable<Transfer> $files
      *
      * @return void
      */
@@ -110,7 +110,7 @@ final class Modify implements GenericModifyInterface, ConfigurationAwareInterfac
     }
 
     /**
-     * @param array $results
+     * @param array<mixed> $results
      *
      * @return void
      */
@@ -118,7 +118,7 @@ final class Modify implements GenericModifyInterface, ConfigurationAwareInterfac
     {
         foreach ($this->ghosts as $path => $location) {
             $file = new SplFileInfo($path);
-            $contents = file_get_contents($path);
+            $contents = (string) file_get_contents($path);
 
             $item = new Transfer();
             $item->filename  = $file->getFilename();
@@ -139,8 +139,8 @@ final class Modify implements GenericModifyInterface, ConfigurationAwareInterfac
     }
 
     /**
-     * @param iterable $files
-     * @param array $results
+     * @param iterable<Transfer> $files
+     * @param array<mixed> $results
      * @return void
      */
     private function modifyRealFiles(iterable $files, array &$results): void
@@ -156,7 +156,7 @@ final class Modify implements GenericModifyInterface, ConfigurationAwareInterfac
     }
 
     /**
-     * @param array $modified
+     * @param array<Transfer> $modified
      * @param string $modifyPath
      */
     private function putToDisk(array $modified, string $modifyPath): void
@@ -176,7 +176,7 @@ final class Modify implements GenericModifyInterface, ConfigurationAwareInterfac
     }
 
     /**
-     * @param $modifyPath
+     * @param string $modifyPath
      */
     private function copyOriginalFiles(string $modifyPath): void
     {

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "385e2e2a73044cadf0b2a66d9eeed2c7",
+    "content-hash": "2f8e69880a9586976af3da24a8698794",
     "packages": [
         {
             "name": "league/plates",
@@ -3466,6 +3466,46 @@
                 "stub"
             ],
             "time": "2019-10-03T11:07:50+00:00"
+        },
+        {
+            "name": "phpstan/phpstan",
+            "version": "0.12.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/phpstan/phpstan.git",
+                "reference": "15a2c2b7d4195aa712506e14763ef7646ac6a08c"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/15a2c2b7d4195aa712506e14763ef7646ac6a08c",
+                "reference": "15a2c2b7d4195aa712506e14763ef7646ac6a08c",
+                "shasum": ""
+            },
+            "require": {
+                "nikic/php-parser": "^4.3.0",
+                "php": "^7.1"
+            },
+            "bin": [
+                "phpstan",
+                "phpstan.phar"
+            ],
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "0.12-dev"
+                }
+            },
+            "autoload": {
+                "files": [
+                    "bootstrap.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "PHPStan - PHP Static Analysis Tool",
+            "time": "2019-12-09T09:13:49+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",

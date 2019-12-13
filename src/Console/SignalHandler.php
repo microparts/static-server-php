@@ -10,7 +10,7 @@ class SignalHandler
      * @param int $sigNumber
      * @throws \Throwable
      */
-    public function handle(int $sigNumber)
+    public function handle(int $sigNumber): void
     {
         switch ($sigNumber) {
             case SIGTERM:
@@ -19,7 +19,6 @@ class SignalHandler
             case SIGSTOP:
                 Server::fromGlobals()->stop();
                 exit;
-                break;
             case SIGUSR1:
                 Server::fromGlobals()->reload();
                 break;

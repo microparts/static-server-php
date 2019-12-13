@@ -29,7 +29,7 @@ interface HeaderInterface
      * Due to backward compatibility.
      *
      * @param \Microparts\Configuration\ConfigurationInterface $conf
-     * @return array
+     * @return array<string, string>
      */
     public function convert(ConfigurationInterface $conf): array;
 }

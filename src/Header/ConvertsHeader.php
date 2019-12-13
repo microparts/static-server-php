@@ -14,7 +14,7 @@ final class ConvertsHeader implements HeaderInterface
      * https://tools.ietf.org/html/rfc5988#section-5.5
      *
      * @param \Microparts\Configuration\ConfigurationInterface $conf
-     * @return array
+     * @return array<string, string>
      */
     public function convert(ConfigurationInterface $conf): array
     {

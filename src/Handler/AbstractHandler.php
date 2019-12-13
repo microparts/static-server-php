@@ -23,10 +23,10 @@ abstract class AbstractHandler implements HandlerInterface, ConfigurationAwareIn
     }
 
     /**
-     * @param array $args
+     * @param array<string> $args
      * @param callable|null $callback
      */
-    protected function runProcess(array $args, ?callable $callback = null)
+    protected function runProcess(array $args, ?callable $callback = null): void
     {
         $proc = new Process($args);
         $proc->setTimeout(null);
@@ -36,7 +36,7 @@ abstract class AbstractHandler implements HandlerInterface, ConfigurationAwareIn
             $callback($proc);
         }
 
-        $proc->wait(function ($type, $buffer) use ($callback) {
+        $proc->wait(function ($type, $buffer) {
             $this->logger->info($buffer);
         });
     }

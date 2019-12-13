@@ -8,7 +8,7 @@ class HandlerFactory
 {
     /**
      * @param string $name
-     * @param array $options
+     * @param array<string, string> $options
      * @return \StaticServer\Handler\NginxHandler
      */
     public static function createHandler(string $name, array $options = [])

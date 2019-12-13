@@ -9,6 +9,7 @@ use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+use RuntimeException;
 
 final class RecursiveIterator implements IteratorInterface, ConfigurationAwareInterface, LoggerAwareInterface
 {
@@ -17,7 +18,7 @@ final class RecursiveIterator implements IteratorInterface, ConfigurationAwareIn
     /**
      * Iterate files in server.root.
      *
-     * @return iterable|\Traversable
+     * @return iterable<Transfer>
      */
     public function iterate(): iterable
     {
@@ -36,14 +37,20 @@ final class RecursiveIterator implements IteratorInterface, ConfigurationAwareIn
                 continue;
             }
 
-            $this->logger->debug('Iterator. Processing real file: ' . $item->getRealPath());
+            $realpath = $item->getRealPath();
+
+            $this->logger->debug('Iterator. Processing real file: ' . $realpath);
+
+            if (!$realpath) {
+                throw new RuntimeException('Unexpected error.');
+            }
 
             $transfer = new Transfer();
             $transfer->filename  = $item->getFilename();
-            $transfer->realpath  = $item->getRealPath();
+            $transfer->realpath  = $realpath;
             $transfer->extension = $item->getExtension();
-            $transfer->location  = substr($item->getRealPath(), strlen($path));
-            $transfer->content   = file_get_contents($item->getRealPath());
+            $transfer->location  = substr($realpath, strlen($path));
+            $transfer->content   = (string) file_get_contents($realpath);
 
             yield $transfer;
         }

@@ -13,7 +13,7 @@ final class NullGenericModify implements GenericModifyInterface
     /**
      * Nothing to modify if modifier not set up.
      *
-     * @param iterable $files
+     * @param iterable<\StaticServer\Modifier\Iterator\Transfer> $files
      *
      * @return void
      */

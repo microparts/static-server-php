@@ -12,7 +12,7 @@ class DefaultPreferencesConfigurator implements ModifyConfiguratorInterface, Con
     use ConfigurationAwareTrait, LoggerAwareTrait;
 
     /**
-     * @var string|null
+     * @var string
      */
     private string $stage = '';
 
@@ -24,8 +24,8 @@ class DefaultPreferencesConfigurator implements ModifyConfiguratorInterface, Con
     /**
      * DefaultPreferencesConfigurator constructor.
      *
-     * @param string|null $stage
-     * @param string|null $sha1
+     * @param string $stage
+     * @param string $sha1
      */
     public function __construct(string $stage = '', string $sha1 = '')
     {
@@ -76,7 +76,7 @@ class DefaultPreferencesConfigurator implements ModifyConfiguratorInterface, Con
             $file['dirname'],
             $file['filename'],
             $this->sha1,
-            $file['extension']
+            $file['extension'] ?? ''
         );
     }
 }

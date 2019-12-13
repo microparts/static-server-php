@@ -80,7 +80,7 @@ final class PrepareConfigModify implements ModifyInterface, ConfigurationAwareIn
     /**
      * Removed server key from config for security reasons.
      *
-     * @return array
+     * @return array<mixed>
      */
     private function cleanupServerKeyFromConfig(): array
     {
