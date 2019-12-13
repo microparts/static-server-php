@@ -10,14 +10,15 @@ use Microparts\Logger\Logger;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
+use StaticServer\Handler\HandlerFactory;
 use StaticServer\Handler\HandlerInterface;
-use StaticServer\Handler\NginxHandler;
 use StaticServer\Header\ConvertsHeader;
 use StaticServer\Modifier\DefaultPreferencesConfigurator;
 use StaticServer\Modifier\GenericModifyInterface;
 use StaticServer\Modifier\Iterator\IteratorInterface;
 use StaticServer\Modifier\Iterator\RecursiveIterator;
 use StaticServer\Modifier\ModifyConfiguratorInterface;
+use Throwable;
 
 final class Application
 {
@@ -46,18 +47,6 @@ final class Application
 
         $this->setModifyConfigurator(new DefaultPreferencesConfigurator($stage, $sha1));
         $this->setIterator(new RecursiveIterator());
-        $this->setHandler(new NginxHandler());
-    }
-
-    /**
-     * @param \StaticServer\Handler\HandlerInterface $handler
-     * @return Application
-     */
-    public function setHandler(HandlerInterface $handler): self
-    {
-        $this->handler = $handler;
-
-        return $this;
     }
 
     /**
@@ -109,8 +98,8 @@ final class Application
      * Run server.
      *
      * @codeCoverageIgnore
-     *
      * @return void
+     * @throws \Throwable
      */
     public function run(): void
     {
@@ -120,36 +109,43 @@ final class Application
         try {
             $this->ready();
             $this->handler->start();
-        } finally {
+        } catch (Throwable $e) {
             $this->handler->stop();
+            throw $e;
         }
     }
 
-    public function stop(): void
-    {
-        $this->loadConfiguration();
-        $this->loadLogger(true);
-
-        try {
-            $this->ready(false);
-        } finally {
-            $this->handler->stop();
-        }
-    }
-
+    /**
+     * @throws \Throwable
+     */
     public function reload(): void
     {
         $this->loadConfiguration();
-        $this->loadLogger(true);
+        $this->loadLogger();
 
         $this->logger->info('Reload configuration');
 
         try {
             $this->ready();
             $this->handler->reload();
-        } finally {
+            $this->logger->info('Configuration reloaded');
+        } catch (Throwable $e) {
             $this->handler->stop();
+            throw $e;
         }
+    }
+
+    public function stop(): void
+    {
+        $this->loadConfiguration();
+        $this->loadLogger();
+
+        $this->logger->info('Stopping server...');
+
+        $this->shutUpLogger();
+
+        $this->ready(false);
+        $this->handler->stop();
     }
 
     /**
@@ -167,6 +163,10 @@ final class Application
 
         $this->putModifyConfiguratorDependenciesToObject();
         $this->modify = $this->modifyConfigurator->getModifier();
+        $this->handler = HandlerFactory::createHandler(
+            $this->conf->get('server.handler.name'),
+            $this->conf->get('server.handler.options')
+        );
 
         $this->putLoggerToObjects();
         $this->putConfigurationToObjects();
@@ -260,22 +260,16 @@ final class Application
     }
 
     /**
-     * @param bool $forceSilent
      * @return void
      */
-    private function loadLogger(bool $forceSilent = false): void
+    private function loadLogger(): void
     {
         if (!$this->conf instanceof ConfigurationInterface) {
             throw new LogicException('Can\'t load Server logger before Configuration.');
         }
 
-        if ($forceSilent) {
-            $this->logger = new NullLogger();
-            return;
-        }
-
         if (!$this->conf->get('server.logger.enabled')) {
-            $this->logger = new NullLogger();
+            $this->shutUpLogger();
             return;
         }
 
@@ -283,5 +277,10 @@ final class Application
             self::SERVER_LOG_CHANNEL,
             $this->conf->get('server.logger.level')
         );
+    }
+
+    private function shutUpLogger(): void
+    {
+        $this->logger = new NullLogger();
     }
 }

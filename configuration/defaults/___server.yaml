@@ -11,6 +11,11 @@ defaults:
       # head -> Injects the __config.js to top of <head> tag. It will be block content rendering, so not recommended.
       # before_script -> Injects the __config.js before first <script> tag in DOM document. Better than `head` variant.
       inject: before_script # head/before_script
+    handler:
+      name: nginx
+      options:
+        pid: /tmp/spa_nginx.pid
+        config: /tmp/generated_nginx.conf
     prerender:
       enabled: false
       url: null

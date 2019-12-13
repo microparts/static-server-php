@@ -2,8 +2,6 @@
 
 namespace StaticServer\Console;
 
-use Microparts\Configuration\Configuration;
-use Microparts\Logger\Logger;
 use StaticServer\Reload;
 use StaticServer\Server;
 use Symfony\Component\Console\Command\Command;

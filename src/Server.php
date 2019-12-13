@@ -35,6 +35,7 @@ final class Server
      *
      * @param bool $dryRun
      * @return void
+     * @throws \Throwable
      */
     public function run(bool $dryRun = false): void
     {
@@ -46,6 +47,9 @@ final class Server
         $this->app->stop();
     }
 
+    /**
+     * @throws \Throwable
+     */
     public function reload(): void
     {
         $this->app->reload();

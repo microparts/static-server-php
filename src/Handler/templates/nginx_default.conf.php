@@ -9,6 +9,8 @@ worker_rlimit_nofile 10000;
 # only log critical errors
 error_log /dev/stderr warn;
 
+pid <?=$pidLocation?>;
+
 # provides the configuration file context in which the directives that affect connection processing are specified.
 events {
     # determines how much clients will be served per worker

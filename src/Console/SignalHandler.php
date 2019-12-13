@@ -8,6 +8,7 @@ class SignalHandler
 {
     /**
      * @param int $sigNumber
+     * @throws \Throwable
      */
     public function handle(int $sigNumber)
     {

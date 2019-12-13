@@ -13,22 +13,27 @@ class NginxHandler extends AbstractHandler
     private Engine $templates;
 
     /**
-     * @var string
+     * @var array
      */
-    private string $generatedConfig;
+    private array $options;
 
     /**
      * NginxHandler constructor.
+     *
+     * @param array $options
      */
-    public function __construct()
+    public function __construct(array $options = [])
     {
-        $this->templates       = new Engine(__DIR__ . DIRECTORY_SEPARATOR . 'templates');
-        $this->generatedConfig = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'generated_nginx.conf';
+        $this->templates = new Engine(__DIR__ . DIRECTORY_SEPARATOR . 'templates');
+        $this->options   = $options;
     }
 
     public function checkDependenciesBeforeStart(): void
     {
         // TODO: Implement checkDependenciesBeforeStart() method.
+        // check if nginx is installed
+        // check brotli is installed
+        // ping prerender url
     }
 
     /**
@@ -36,6 +41,8 @@ class NginxHandler extends AbstractHandler
      */
     public function generateConfig(HeaderInterface $header): void
     {
+        $this->logger->info("Nginx PID location: {$this->options['pid']}");
+
         $data = $this->templates->render('nginx_default.conf', [
             'serverRoot' => realpath($this->getServerRoot()),
             'serverIndex' => $this->configuration->get('server.index'),
@@ -46,17 +53,16 @@ class NginxHandler extends AbstractHandler
             'prerenderToken' => $this->configuration->get('server.prerender.token'),
             'prerenderHost' => $this->getHostWithoutTrailingSlash('server.prerender.host'),
             'headers' => $header->convert($this->configuration),
-            'connProcMethod' => $this->getConnectionProcessingMethod()
+            'connProcMethod' => $this->getConnectionProcessingMethod(),
+            'pidLocation' => $this->options['pid'],
         ]);
 
-        $this->logger->info("Generated config stored here: {$this->generatedConfig}");
-
-        file_put_contents($this->generatedConfig, $data);
+        file_put_contents($this->options['config'], $data);
     }
 
     public function checkConfig(): void
     {
-        $this->runProcess(['nginx', '-c', $this->generatedConfig, '-t']);
+        $this->runProcess(['nginx', '-c', $this->options['config'], '-t']);
     }
 
     /**
@@ -64,7 +70,7 @@ class NginxHandler extends AbstractHandler
      */
     public function start(): void
     {
-        $this->runProcess(['nginx', '-c', $this->generatedConfig], function () {
+        $this->runProcess(['nginx', '-c', $this->options['config']], function () {
             $this->logger->info(sprintf(
                 'Server started at: %s:%d',
                 $this->configuration->get('server.host'),
@@ -75,12 +81,12 @@ class NginxHandler extends AbstractHandler
 
     public function reload(): void
     {
-        $this->runProcess(['nginx', '-c', $this->generatedConfig, '-s', 'reload']);
+        $this->runProcess(['nginx', '-c', $this->options['config'], '-s', 'reload']);
     }
 
     public function stop(): void
     {
-        $this->runProcess(['nginx', '-c', $this->generatedConfig, '-s', 'stop']);
+        $this->runProcess(['nginx', '-c', $this->options['config'], '-s', 'stop']);
     }
 
     /**
