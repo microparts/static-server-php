@@ -131,7 +131,7 @@ http {
     open_file_cache_errors on;
 
     # to boost I/O on HDD we can disable access logs
-    access_log off;
+    access_log on;
 
     # copies data between one FD and other from within the kernel
     # faster than read() + write()
@@ -215,21 +215,36 @@ http {
         root   "<?=$serverRoot?>";
         index  "<?=$serverIndex?>";
 
-        <?php foreach($headers as $name => $value):?>
-            add_header "<?=$name?>" "<?=addslashes($value)?>";
-        <?php endforeach;?>
-
         location /healthcheck {
             add_header Content-Type text/plain;
             return 200 "ok";
         }
 
-        <?php if ($prerenderEnabled):?>
-            location /index.html {
-                add_header Cache-Control "no-store, no-cache, must-revalidate";
-                try_files $uri @prerender;
-            }
+        aio on;
+        output_buffers 1 64k;
 
+        port_in_redirect off;
+        absolute_redirect off;
+        rewrite ^(.+)/+$ $1 permanent;
+        rewrite ^(.+)/index.html$ $1 permanent;
+
+        location ~* \.(webm|png|jpg|jpeg|gif|pdf|doc|docx|ico|zip|mp3|rar|exe|wmv|avi|ppt|pptx|mpg|mpeg|tif|wav|mov|psd|ai|xls|xlsx|mp4|m4a|swf|dat|dmg|iso|flv|m4v|torrent|ttf|woff|woff2|otf|svg|eot)$ {
+            expires 1y;
+            add_header "Cache-Control" "public, max-age=31536000";
+            try_files $uri =404;
+        }
+
+        location ~* \.(js|css|json|map|xml)$ {
+            expires 1d;
+            add_header "Cache-Control" "public, must-revalidate, max-age=86400";
+            try_files $uri =404;
+        }
+
+        <?php foreach($headers as $name => $value):?>
+            add_header "<?=$name?>" "<?=addslashes($value)?>";
+        <?php endforeach;?>
+
+        <?php if ($prerenderEnabled):?>
             location / {
                 try_files $uri @prerender;
             }
@@ -243,7 +258,7 @@ http {
                 proxy_intercept_errors on;
                 proxy_buffering        on;
                 proxy_cache            STATIC;
-                proxy_cache_valid      200  2h;
+                proxy_cache_valid      200  12h;
                 proxy_cache_use_stale  error timeout invalid_header updating http_500 http_502 http_503 http_504;
 
                 set $prerender 0;
@@ -259,43 +274,27 @@ http {
                     set $prerender 0;
                 }
 
-                if ($uri ~* "\.(js|css|xml|png|jpg|jpeg|gif|pdf|doc|docx|txt|ico|rss|zip|mp3|rar|exe|wmv|avi|ppt|pptx|mpg|mpeg|tif|wav|mov|psd|ai|xls|xlsx|mp4|m4a|swf|dat|dmg|iso|flv|m4v|torrent|ttf|woff|svg|eot)") {
-                    set $prerender 0;
-                    expires 24h;
-                    add_header Cache-Control "public, must-revalidate, proxy-revalidate, max-age=86400";
-                }
-
                 # resolve using Google's DNS/Cloudflare server to force DNS resolution and prevent caching of IPs
                 resolver 8.8.8.8 8.8.4.4 1.1.1.1 1.0.0.1;
 
                 if ($prerender = 1) {
                     #setting prerender as a variable forces DNS resolution since nginx caches IPs and doesnt play well with load balancing
-                    set $proxyprerender "<?=$prerenderUrl?>";
+                    set $prerender "<?=$prerenderUrl?>";
                     rewrite .* /<?=$prerenderHost?>$request_uri? break;
-                    proxy_pass https://$proxyprerender;
+                    proxy_pass https://$prerender;
                 }
 
                 if ($prerender = 0) {
-                    rewrite ^(.+)$ /index.html last;
+                    rewrite ^(.+)$ /index.html?$query_string break;
                 }
             }
         <?php else:?>
-            location /index.html {
-                add_header Cache-Control "no-store, no-cache, must-revalidate";
-                try_files $uri $uri/ @rewrites;
-            }
-
             location / {
-                try_files $uri $uri/ @rewrites;
+                try_files $uri @rewrites;
             }
 
             location @rewrites {
-                rewrite ^(.+)$ /index.html last;
-            }
-
-            location ~* \.(js|css|json|xml|webm|png|jpg|jpeg|gif|pdf|doc|docx|txt|ico|rss|zip|mp3|rar|exe|wmv|avi|ppt|pptx|mpg|mpeg|tif|wav|mov|psd|ai|xls|xlsx|mp4|m4a|swf|dat|dmg|iso|flv|m4v|torrent|ttf|woff|svg|eot) {
-                expires 24h;
-                add_header Cache-Control "public, must-revalidate, proxy-revalidate, max-age=86400";
+                rewrite ^(.+)$ /index.html?$query_string break;
             }
         <?php endif;?>
     }

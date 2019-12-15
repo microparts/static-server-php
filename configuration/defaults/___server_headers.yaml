@@ -16,7 +16,7 @@ defaults:
         - autoplay 'none'
       referer_policy: no-referrer
       pragma: public
-      cache_control: public, must-revalidate, proxy-revalidate
+      #cache_control: public, must-revalidate, proxy-revalidate
       xss_protection: 1; mode=block
       x_content_type: nosniff
       x_content_type_options: nosniff
