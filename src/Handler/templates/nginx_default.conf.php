@@ -147,9 +147,10 @@ http {
 
     server_tokens off;
 
-    brotli on;
-    brotli_static on;
-    brotli_types
+    <?php if ($moduleBrotliInstalled):?>
+      brotli on;
+      brotli_static on;
+      brotli_types
         text/css
         text/javascript
         text/xml
@@ -165,6 +166,7 @@ http {
         font/opentype
         application/vnd.ms-fontobject
         image/svg+xml;
+    <?php endif;?>
 
     # reduce the data that needs to be sent over network -- for testing environment
     gzip on;
@@ -220,8 +222,10 @@ http {
             return 200 "ok";
         }
 
-        aio on;
-        output_buffers 1 64k;
+        <?php if ($platformSupportsAsyncIo):?>
+          aio on;
+          output_buffers 1 64k;
+        <?php endif;?>
 
         port_in_redirect off;
         absolute_redirect off;

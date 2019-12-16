@@ -2,9 +2,14 @@
 
 namespace StaticServer\Handler;
 
+use InvalidArgumentException;
+use JJG\Ping;
 use League\Plates\Engine;
 use LogicException;
+use RuntimeException;
 use StaticServer\Header\HeaderInterface;
+use Symfony\Component\Process\Exception\ProcessFailedException;
+use Symfony\Component\Process\Process;
 
 class NginxHandler extends AbstractHandler
 {
@@ -19,6 +24,16 @@ class NginxHandler extends AbstractHandler
     private array $options;
 
     /**
+     * @var bool
+     */
+    private bool $moduleBrotliInstalled = false;
+
+    /**
+     * @var bool
+     */
+    private bool $platformSupportsAsyncIo = false;
+
+    /**
      * NginxHandler constructor.
      *
      * @param array<string, string> $options
@@ -29,12 +44,15 @@ class NginxHandler extends AbstractHandler
         $this->options   = $options;
     }
 
+    /**
+     * @throws \Exception
+     */
     public function checkDependenciesBeforeStart(): void
     {
-        // TODO: Implement checkDependenciesBeforeStart() method.
-        // check if nginx is installed
-        // check brotli is installed
-        // ping prerender url
+        $this->checkIfNginxInstalled();
+        $this->checkIfBrotliModuleInstalled();
+        $this->checkIfPlatformSupportsAsyncIo();
+        $this->checkIfPrerenderUrlIsAvailable();
     }
 
     /**
@@ -56,6 +74,8 @@ class NginxHandler extends AbstractHandler
             'headers' => $header->convert($this->configuration),
             'connProcMethod' => $this->getConnectionProcessingMethod(),
             'pidLocation' => $this->options['pid'],
+            'moduleBrotliInstalled' => $this->moduleBrotliInstalled,
+            'platformSupportsAsyncIo' => $this->platformSupportsAsyncIo,
         ]);
 
         file_put_contents($this->options['config'], $data);
@@ -125,6 +145,93 @@ class NginxHandler extends AbstractHandler
                 return  'kqueue';
             default:
                 return 'poll';
+        }
+    }
+
+    /**
+     * @throws \Exception
+     */
+    private function checkIfPrerenderUrlIsAvailable(): void
+    {
+        if (!$this->configuration->get('server.prerender.enabled', false)) {
+            $this->logger->info('Prerender is not enabled, skip check.');
+            return;
+        }
+
+        $url = $this->configuration->get('server.prerender.url', false);
+
+        if (!$url) {
+            throw new InvalidArgumentException('Prerender URL not set. Check server.prerender.url config key.');
+        }
+
+        $this->logger->info('Ping prerender url...');
+
+        $ping = new Ping($url);
+        $latency = $ping->ping('fsockopen');
+
+        if ($latency !== false) {
+            $this->logger->info('Prerender url is available.');
+            return;
+        }
+
+        $this->logger->warning('Prerender url could not be reached: ' . $url);
+    }
+
+    /**
+     * @return void
+     */
+    private function checkIfPlatformSupportsAsyncIo(): void
+    {
+        $this->logger->info('Check if platform supports async io...');
+
+        switch (PHP_OS_FAMILY) {
+            case 'Linux':
+            case 'BSD':
+                $this->logger->info('Platform supports async io, turning it on.');
+                $this->platformSupportsAsyncIo = true;
+                break;
+            default:
+                $this->logger->info('Platform does not supports async io, turning it off.');
+                $this->platformSupportsAsyncIo = false;
+        }
+    }
+
+    /**
+     * @return void
+     */
+    private function checkIfNginxInstalled(): void
+    {
+        $proc = new Process(['which', 'nginx']);
+
+        try {
+            $proc->mustRun();
+        } catch (ProcessFailedException $e) {
+            $this->logger->critical('Command [which nginx] failed: ' . $e->getMessage());
+            throw $e;
+        }
+
+        if (strpos($proc->getOutput(), 'nginx') === false) {
+            throw new RuntimeException('Unexpected error.');
+        }
+    }
+
+    private function checkIfBrotliModuleInstalled(): void
+    {
+        $proc = new Process(['nginx', '-V']);
+
+        try {
+            $proc->mustRun();
+        } catch (ProcessFailedException $e) {
+            $this->logger->critical('Command [nginx -V] failed: ' . $e->getMessage());
+            throw $e;
+        }
+
+        if (strpos($proc->getOutput(), 'brotli') === false) {
+            $this->logger->info('Nginx Brotli module not installed. Turning off this compression method.');
+            $this->moduleBrotliInstalled = false;
+        } else {
+            $this->logger->info('Nginx Brotli module installed. Turning it on.');
+            $this->moduleBrotliInstalled = true;
         }
     }
 }
