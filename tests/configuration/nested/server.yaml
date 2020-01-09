@@ -2,3 +2,5 @@ nested:
   server:
     port: 8081
     root: ./tests/example_dist/simple
+    modify:
+      root: ./tests/example_dist/simple/modified

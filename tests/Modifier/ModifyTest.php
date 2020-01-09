@@ -4,7 +4,7 @@ namespace StaticServer\Tests\Modifier;
 
 use Microparts\Configuration\Configuration;
 use Psr\Log\NullLogger;
-use StaticServer\Iterator\RecursiveIterator;
+use StaticServer\Modifier\Iterator\RecursiveIterator;
 use StaticServer\Modifier\Modify;
 use StaticServer\Modifier\ModifyInterface;
 use StaticServer\Modifier\NullModify;
@@ -14,20 +14,24 @@ class ModifyTest extends TestCase
 {
     public function testAddFilesToModify()
     {
-        $m = new Modify();
-        $m->addModifier(new NullModify());
-        $m->addTemplate(__FILE__, '/foobar');
-
         $conf = new Configuration(__DIR__ . '/../configuration', 'nested');
         $conf->load();
 
-        $it = new RecursiveIterator(new NullLogger());
-        $it->setConfiguration($conf);
-        /** @var \StaticServer\Transfer[] $array */
-        $array = iterator_to_array($m->modify($it->iterate()));
+        $m = new Modify();
+        $m->setLogger(new NullLogger());
+        $m->setConfiguration($conf);
+        $m->addModifier(new NullModify());
+        $m->addTemplate(__FILE__, '/foobar');
 
-        $this->assertInstanceOf(ModifyInterface::class, $m->getModifiers()[0]);
-        $this->assertEquals('ModifyTest.php', $array[0]->getFilename());
-        $this->assertEquals(file_get_contents(__FILE__), $array[0]->getContent());
+        $it = new RecursiveIterator();
+        $it->setLogger(new NullLogger());
+        $it->setConfiguration($conf);
+        /** @var \StaticServer\Modifier\Iterator\Transfer[] $array */
+        $m->modifyAndSaveToDisk($it->iterate());
+
+        $path = realpath($conf->get('server.modify.root'));
+        $this->assertFileExists($path . '/nested/bla-bla.txt');
+        $this->assertFileExists($path . '/foobar');
+        $this->assertEquals(file_get_contents(__FILE__), file_get_contents($path . '/foobar'));
     }
 }

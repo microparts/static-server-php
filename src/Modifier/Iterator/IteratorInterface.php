@@ -1,13 +1,13 @@
 <?php declare(strict_types=1);
 
-namespace StaticServer\Iterator;
+namespace StaticServer\Modifier\Iterator;
 
 interface IteratorInterface
 {
     /**
      * Iterate files in server.root.
      *
-     * @return iterable
+     * @return iterable<\StaticServer\Modifier\Iterator\Transfer>
      */
     public function iterate(): iterable;
 }

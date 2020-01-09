@@ -1,9 +1,13 @@
 #!/usr/bin/env php
 <?php
 
+use Microparts\Logger\Logger;
+use StaticServer\Application as Server;
 use StaticServer\Console\DumpConfigCommand;
 use StaticServer\Console\ReloadServerCommand;
 use StaticServer\Console\RunServerCommand;
+use StaticServer\Console\SignalHandler;
+use StaticServer\Console\StopServerCommand;
 use Symfony\Component\Console\Application;
 
 $locations = [
@@ -19,8 +23,24 @@ foreach ($locations as $file) {
     }
 }
 
-$app = new Application('Static server', '1.2.0');
-$app->add(new RunServerCommand());
-$app->add(new DumpConfigCommand());
-$app->add(new ReloadServerCommand());
-$app->run();
+$logger = Logger::default('Fatal');
+
+pcntl_async_signals(true);
+
+$sig = new SignalHandler();
+pcntl_signal(SIGTERM, [$sig, 'handle']);
+pcntl_signal(SIGINT, [$sig, 'handle']);
+pcntl_signal(SIGQUIT, [$sig, 'handle']);
+pcntl_signal(SIGUSR1, [$sig, 'handle']);
+
+try {
+    $app = new Application('Static server', Server::VERSION);
+    $app->add(new RunServerCommand());
+    $app->add(new StopServerCommand());
+    $app->add(new DumpConfigCommand());
+    $app->add(new ReloadServerCommand());
+    $app->run();
+} catch (Throwable $e) {
+    $logger->critical($e->getMessage(), ['trace' => $e->getTraceAsString()]);
+    exit(1);
+}

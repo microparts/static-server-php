@@ -6,11 +6,11 @@ interface GenericModifyInterface
 {
     /**
      * Method for modify incoming files
-     * or add new one.
+     * or add new one. Then, saves to disk without override original files.
      *
-     * @param iterable $files
+     * @param iterable<\StaticServer\Modifier\Iterator\Transfer> $files
      *
-     * @return iterable
+     * @return void
      */
-    public function modify(iterable $files): iterable;
+    public function modifyAndSaveToDisk(iterable $files): void;
 }

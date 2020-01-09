@@ -2,27 +2,20 @@
 
 namespace StaticServer\Console;
 
-use StaticServer\Reload;
 use StaticServer\Server;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-/**
- * Class ReloadServerCommand
- *
- * @codeCoverageIgnore
- * @package StaticServer\Console
- */
-class ReloadServerCommand extends Command
+class StopServerCommand extends Command
 {
 
     protected function configure(): void
     {
         $this
-            ->setName('reload')
-            ->setDescription('Reload server')
-            ->setHelp('Example of usage: `server reload`');
+            ->setName('stop')
+            ->setDescription('Stop server')
+            ->setHelp('Example of usage: `server stop`.');
     }
 
     /**
@@ -36,7 +29,7 @@ class ReloadServerCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        Server::fromGlobals()->reload();
+        Server::fromGlobals()->stop();
 
         return 0;
     }

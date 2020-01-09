@@ -10,20 +10,24 @@
   "require": {
     "ext-json": "*",
     "ext-dom": "*",
-    "ext-zlib": "*",
-    "ext-brotli": "*",
+    "ext-pcntl": "*",
+    "ext-posix": "*",
     "microparts/configuration-php": "2.*",
     "monolog/monolog": "^1.24",
     "masterminds/html5": "^2.5",
     "symfony/console": "^4.2",
-    "microparts/logs-php": "^1.0"
+    "microparts/logs-php": "^1.0",
+    "symfony/filesystem": "^4.2",
+    "symfony/process": "^4.2",
+    "league/plates": "^3.3",
+    "geerlingguy/ping": "^1.2"
   },
   "require-dev": {
     "roave/security-advisories": "dev-master",
-    "eaglewu/swoole-ide-helper": "dev-master",
     "symfony/var-dumper": "^4",
     "phpunit/phpunit": "^8",
-    "humbug/box": "^3.8"
+    "humbug/box": "^3.8",
+    "phpstan/phpstan": "^0.12.2"
   },
   "autoload": {
     "psr-4": {

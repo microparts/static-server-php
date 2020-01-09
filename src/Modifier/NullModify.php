@@ -2,7 +2,7 @@
 
 namespace StaticServer\Modifier;
 
-use StaticServer\Transfer;
+use StaticServer\Modifier\Iterator\Transfer;
 
 class NullModify implements ModifyInterface
 {
@@ -11,9 +11,9 @@ class NullModify implements ModifyInterface
      * from previous Modifier and where $origin object contains first
      * state of original file.
      *
-     * @param Transfer $changed
-     * @param Transfer $origin
-     * @return Transfer
+     * @param \StaticServer\Modifier\Iterator\Transfer $changed
+     * @param \StaticServer\Modifier\Iterator\Transfer $origin
+     * @return \StaticServer\Modifier\Iterator\Transfer
      */
     public function __invoke(Transfer $changed, Transfer $origin): Transfer
     {

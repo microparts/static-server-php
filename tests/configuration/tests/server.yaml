@@ -2,3 +2,7 @@ tests:
   server:
     port: 8081
     root: ./tests/example_dist/vue
+    modify:
+      root: ./tests/example_dist/vue/modified
+    logger:
+      enabled: false

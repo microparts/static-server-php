@@ -5,7 +5,7 @@ namespace StaticServer\Tests\Modifier;
 use Microparts\Configuration\Configuration;
 use StaticServer\Modifier\SecurityTxtModify;
 use StaticServer\Tests\TestCase;
-use StaticServer\Transfer;
+use StaticServer\Modifier\Iterator\Transfer;
 
 class PrepareConfigModifyTest extends TestCase
 {
@@ -18,11 +18,15 @@ class PrepareConfigModifyTest extends TestCase
         $handler->setConfiguration($conf);
 
         $path     = realpath(__DIR__ . '/../../src/stub/security.txt');
-        $transfer = new Transfer('security.txt', $path, 'js', '/.well-known/security.txt');
-        $transfer->setContent(file_get_contents($path));
+        $transfer = new Transfer();
+        $transfer->filename = 'security.txt';
+        $transfer->realpath = $path;
+        $transfer->extension = 'js';
+        $transfer->location = '/.well-known/security.txt';
+        $transfer->content = file_get_contents($path);
 
         $changed = $handler(clone $transfer, $transfer);
 
-        $this->assertStringContainsString("Contact: security@teamc.io\nPreferred-Languages: en, ru", $changed->getContent());
+        $this->assertStringContainsString("Contact: security@spacetab.io\nPreferred-Languages: en, ru", $changed->content);
     }
 }

@@ -1,38 +1,24 @@
 <?php declare(strict_types=1);
 
-namespace StaticServer\Iterator;
+namespace StaticServer\Modifier\Iterator;
 
 use InvalidArgumentException;
 use Microparts\Configuration\ConfigurationAwareInterface;
 use Microparts\Configuration\ConfigurationAwareTrait;
-use Psr\Log\LoggerInterface;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
-use StaticServer\Transfer;
+use RuntimeException;
 
-final class RecursiveIterator implements IteratorInterface, ConfigurationAwareInterface
+final class RecursiveIterator implements IteratorInterface, ConfigurationAwareInterface, LoggerAwareInterface
 {
-    use ConfigurationAwareTrait;
-
-    /**
-     * @var \Psr\Log\LoggerInterface
-     */
-    private $logger;
-
-    /**
-     * RecursiveIterator constructor.
-     *
-     * @param \Psr\Log\LoggerInterface $logger
-     */
-    public function __construct(LoggerInterface $logger)
-    {
-        $this->logger = $logger;
-    }
+    use ConfigurationAwareTrait, LoggerAwareTrait;
 
     /**
      * Iterate files in server.root.
      *
-     * @return iterable|\Traversable
+     * @return iterable<Transfer>
      */
     public function iterate(): iterable
     {
@@ -51,15 +37,22 @@ final class RecursiveIterator implements IteratorInterface, ConfigurationAwareIn
                 continue;
             }
 
-            $this->logger->debug('Processing file: ' . $item->getRealPath());
+            $realpath = $item->getRealPath();
 
-            yield new Transfer(
-                $item->getFilename(),
-                $item->getRealPath(),
-                $item->getExtension(),
-                substr($item->getRealPath(), strlen($path)),
-                file_get_contents($item->getRealPath())
-            );
+            $this->logger->debug('Iterator. Processing real file: ' . $realpath);
+
+            if (!$realpath) {
+                throw new RuntimeException('Unexpected error.');
+            }
+
+            $transfer = new Transfer();
+            $transfer->filename  = $item->getFilename();
+            $transfer->realpath  = $realpath;
+            $transfer->extension = $item->getExtension();
+            $transfer->location  = substr($realpath, strlen($path));
+            $transfer->content   = (string) file_get_contents($realpath);
+
+            yield $transfer;
         }
     }
 

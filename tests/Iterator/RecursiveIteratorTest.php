@@ -6,8 +6,8 @@ use InvalidArgumentException;
 use Microparts\Configuration\Configuration;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
-use StaticServer\Iterator\RecursiveIterator;
-use StaticServer\Transfer;
+use StaticServer\Modifier\Iterator\RecursiveIterator;
+use StaticServer\Modifier\Iterator\Transfer;
 
 class RecursiveIteratorTest extends TestCase
 {
@@ -18,23 +18,23 @@ class RecursiveIteratorTest extends TestCase
         $conf = new Configuration(__DIR__ . '/../configuration', 'nested');
         $conf->load();
 
-        $it = new RecursiveIterator(new NullLogger());
+        $it = new RecursiveIterator();
+        $it->setLogger(new NullLogger());
         $it->setConfiguration($conf);
 
         $transfer = null;
         foreach ($it->iterate() as $item) {
-            /** @var Transfer $item */
+            /** @var \StaticServer\Modifier\Iterator\Transfer $item */
             $this->assertInstanceOf(Transfer::class, $item);
-            if ($item->getFilename() === 'bla-bla.txt') {
+            if ($item->filename === 'bla-bla.txt') {
                 $transfer = $item;
                 break;
             }
         }
 
-        $this->assertEquals('txt', $transfer->getExtension());
-        $this->assertEquals(realpath($file), $transfer->getRealpath());
-        $this->assertEquals('/nested/bla-bla.txt', $transfer->getLocation());
-        $this->assertEquals(file_get_contents($file), $transfer->getContent());
+        $this->assertEquals('txt', $transfer->extension);
+        $this->assertEquals('/modified/nested/bla-bla.txt', $transfer->location);
+        $this->assertEquals(file_get_contents($file), $transfer->content);
     }
 
     public function testHowRecursiveIteratorNotFoundTheFiles()
@@ -44,9 +44,11 @@ class RecursiveIteratorTest extends TestCase
         $conf = new Configuration(__DIR__ . '/../configuration', 'not_found');
         $conf->load();
 
-        $it = new RecursiveIterator(new NullLogger());
+        $it = new RecursiveIterator();
+        $it->setLogger(new NullLogger());
         $it->setConfiguration($conf);
-        /** @var Transfer[] $array */
+
+        /** @var \StaticServer\Modifier\Iterator\Transfer[] $array */
         iterator_to_array($it->iterate());
     }
 }

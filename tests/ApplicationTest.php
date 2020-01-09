@@ -7,14 +7,14 @@ use Throwable;
 
 class ApplicationTest extends TestCase
 {
-    public function testInit()
+    public function testServerInit()
     {
         $path = __DIR__ . '/../tests/configuration';
 
         try {
             putenv('STAGE=tests');
             putenv("CONFIG_PATH=$path");
-            Server::silent()->dryRun();
+            Server::fromGlobals()->run(true);
         } catch (Throwable $e) {
             printf($e);
             $this->assertFalse((bool) $e);
@@ -24,7 +24,7 @@ class ApplicationTest extends TestCase
         $this->assertTrue(true);
     }
 
-    public function testVcsSha1()
+    public function testServerVcsSha1()
     {
         $this->setOutputCallback(function () {
             $path = __DIR__ . '/../tests/configuration';
@@ -33,7 +33,7 @@ class ApplicationTest extends TestCase
                 putenv('STAGE=tests');
                 putenv("CONFIG_PATH=$path");
                 putenv("VCS_SHA1=test");
-                Server::new()->dryRun();
+                Server::fromGlobals()->run(true);
             } catch (Throwable $e) {
                 printf($e);
                 $this->assertFalse((bool) $e);
