@@ -7,6 +7,7 @@ use StaticServer\Console\DumpConfigCommand;
 use StaticServer\Console\ReloadServerCommand;
 use StaticServer\Console\RunServerCommand;
 use StaticServer\Console\SignalHandler;
+use StaticServer\Console\StopServerCommand;
 use Symfony\Component\Console\Application;
 
 $locations = [
@@ -35,6 +36,7 @@ pcntl_signal(SIGUSR1, [$sig, 'handle']);
 try {
     $app = new Application('Static server', Server::VERSION);
     $app->add(new RunServerCommand());
+    $app->add(new StopServerCommand());
     $app->add(new DumpConfigCommand());
     $app->add(new ReloadServerCommand());
     $app->run();

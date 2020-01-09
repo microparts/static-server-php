@@ -75,6 +75,7 @@ final class Application
      * Dry run without start of server.
      *
      * @return void
+     * @throws \Exception
      */
     public function dryRun(): void
     {
@@ -100,7 +101,9 @@ final class Application
             $this->ready();
             $this->handler->start();
         } catch (Throwable $e) {
-            $this->handler->stop();
+            if (isset($this->handler)) {
+                $this->handler->stop();
+            }
             throw $e;
         }
     }
@@ -120,7 +123,9 @@ final class Application
             $this->handler->reload();
             $this->logger->info('Configuration reloaded');
         } catch (Throwable $e) {
-            $this->handler->stop();
+            if (isset($this->handler)) {
+                $this->handler->stop();
+            }
             throw $e;
         }
     }
@@ -144,6 +149,7 @@ final class Application
      * @codeCoverageIgnore
      * @param bool $checkConfig
      * @return void
+     * @throws \Exception
      */
     private function ready(bool $checkConfig = true): void
     {

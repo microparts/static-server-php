@@ -11,7 +11,7 @@ class HandlerFactoryTest extends TestCase
 {
     public function testHowFactoryCreatesObjects()
     {
-        $object = HandlerFactory::createHandler('nginx', []);
+        $object = HandlerFactory::createHandler('nginx', ['pid' => '', 'config' => '']);
 
         $this->assertInstanceOf(NginxHandler::class, $object);
     }

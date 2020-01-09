@@ -14,8 +14,8 @@ defaults:
     handler:
       name: nginx
       options:
-        pid: /tmp/spa_nginx.pid
-        config: /tmp/generated_nginx.conf
+        pid: ~/.server/spa_nginx.pid
+        config: ~/.server/generated_nginx.conf
     prerender:
       enabled: false
       url: null

@@ -19,9 +19,14 @@ class NginxHandler extends AbstractHandler
     private Engine $templates;
 
     /**
-     * @var array<string, string>
+     * @var string
      */
-    private array $options;
+    private string $pidFile;
+
+    /**
+     * @var string
+     */
+    private string $configFile;
 
     /**
      * @var bool
@@ -40,8 +45,11 @@ class NginxHandler extends AbstractHandler
      */
     public function __construct(array $options = [])
     {
-        $this->templates = new Engine(__DIR__ . DIRECTORY_SEPARATOR . 'templates');
-        $this->options   = $options;
+        $this->templates  = new Engine(__DIR__ . DIRECTORY_SEPARATOR . 'templates');
+        $this->pidFile    = $this->expandPathLikeShell($options['pid']);
+        $this->configFile = $this->expandPathLikeShell($options['config']);
+
+        parent::__construct();
     }
 
     /**
@@ -60,7 +68,9 @@ class NginxHandler extends AbstractHandler
      */
     public function generateConfig(HeaderInterface $header): void
     {
-        $this->logger->info("Nginx PID location: {$this->options['pid']}");
+        $this->logger->info("Nginx PID location: {$this->pidFile}");
+        $this->makePathForFiles([$this->pidFile, $this->configFile]);
+        $this->touchFile($this->pidFile);
 
         $data = $this->templates->render('nginx_default.conf', [
             'serverRoot' => realpath($this->getServerRoot()),
@@ -73,17 +83,17 @@ class NginxHandler extends AbstractHandler
             'prerenderHost' => $this->getHostWithoutTrailingSlash('server.prerender.host'),
             'headers' => $header->convert($this->configuration),
             'connProcMethod' => $this->getConnectionProcessingMethod(),
-            'pidLocation' => $this->options['pid'],
+            'pidLocation' => $this->pidFile,
             'moduleBrotliInstalled' => $this->moduleBrotliInstalled,
             'platformSupportsAsyncIo' => $this->platformSupportsAsyncIo,
         ]);
 
-        file_put_contents($this->options['config'], $data);
+        file_put_contents($this->configFile, $data);
     }
 
     public function checkConfig(): void
     {
-        $this->runProcess(['nginx', '-c', $this->options['config'], '-t']);
+        $this->runProcess(['nginx', '-c', $this->configFile, '-t']);
     }
 
     /**
@@ -91,7 +101,7 @@ class NginxHandler extends AbstractHandler
      */
     public function start(): void
     {
-        $this->runProcess(['nginx', '-c', $this->options['config']], function () {
+        $this->runProcess(['nginx', '-c', $this->configFile], function () {
             $this->logger->info(sprintf(
                 'Server started at: %s:%d',
                 $this->configuration->get('server.host'),
@@ -102,20 +112,24 @@ class NginxHandler extends AbstractHandler
 
     public function reload(): void
     {
-        if (!file_exists($this->options['pid'])) {
+        if (!file_exists($this->pidFile)) {
             throw new LogicException('Can\'t reload server. Pid file not found.');
         }
 
-        if (empty(file_get_contents($this->options['pid']))) {
+        if (empty(file_get_contents($this->pidFile))) {
             throw new LogicException('Can\'t reload server. Pid file is empty.');
         }
 
-        $this->runProcess(['nginx', '-c', $this->options['config'], '-s', 'reload']);
+        $this->runProcess(['nginx', '-c', $this->configFile, '-s', 'reload']);
     }
 
     public function stop(): void
     {
-        $this->runProcess(['nginx', '-c', $this->options['config'], '-s', 'stop']);
+        $this->runProcess(['nginx', '-c', $this->configFile, '-s', 'stop']);
+
+        if ($this->filesystem->exists($this->configFile)) {
+            $this->filesystem->remove($this->configFile);
+        }
     }
 
     /**

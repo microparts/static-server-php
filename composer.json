@@ -11,6 +11,7 @@
     "ext-json": "*",
     "ext-dom": "*",
     "ext-pcntl": "*",
+    "ext-posix": "*",
     "microparts/configuration-php": "2.*",
     "monolog/monolog": "^1.24",
     "masterminds/html5": "^2.5",

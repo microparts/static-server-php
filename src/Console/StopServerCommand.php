@@ -5,20 +5,17 @@ namespace StaticServer\Console;
 use StaticServer\Server;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class RunServerCommand extends Command
+class StopServerCommand extends Command
 {
 
     protected function configure(): void
     {
         $this
-            ->setName('run')
-            ->setAliases(['start'])
-            ->setDescription('Run server')
-            ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Dry run command without server starting.')
-            ->setHelp('Example of usage: `server run`. If u want to change starting host or port, please change the __server_*.yaml configuration files.');
+            ->setName('stop')
+            ->setDescription('Stop server')
+            ->setHelp('Example of usage: `server stop`.');
     }
 
     /**
@@ -32,9 +29,7 @@ class RunServerCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        Server::fromGlobals()->run(
-            (bool) $input->getOption('dry-run')
-        );
+        Server::fromGlobals()->stop();
 
         return 0;
     }

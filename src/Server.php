@@ -3,7 +3,6 @@
 namespace StaticServer;
 
 use Microparts\Configuration\Configuration;
-use Microparts\Configuration\ConfigurationInterface;
 
 final class Server
 {
