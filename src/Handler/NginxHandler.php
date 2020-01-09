@@ -102,11 +102,11 @@ class NginxHandler extends AbstractHandler
 
     public function reload(): void
     {
-        if (file_exists($this->options['config'])) {
+        if (!file_exists($this->options['pid'])) {
             throw new LogicException('Can\'t reload server. Pid file not found.');
         }
 
-        if (empty(file_get_contents($this->options['config']))) {
+        if (empty(file_get_contents($this->options['pid']))) {
             throw new LogicException('Can\'t reload server. Pid file is empty.');
         }
 
@@ -156,6 +156,12 @@ class NginxHandler extends AbstractHandler
         if (!$this->configuration->get('server.prerender.enabled', false)) {
             $this->logger->info('Prerender is not enabled, skip check.');
             return;
+        }
+
+        $scheme = parse_url($this->configuration->get('server.prerender.url', ''), PHP_URL_SCHEME);
+
+        if ($scheme) {
+            throw new InvalidArgumentException("Prerender url has a scheme: [$scheme], please remove it.");
         }
 
         $url = $this->configuration->get('server.prerender.url', false);
@@ -226,7 +232,8 @@ class NginxHandler extends AbstractHandler
             throw $e;
         }
 
-        if (strpos($proc->getOutput(), 'brotli') === false) {
+        # nginx -V send outputs to STDERR. https://trac.nginx.org/nginx/ticket/592
+        if (strpos($proc->getErrorOutput(), 'brotli') === false) {
             $this->logger->info('Nginx Brotli module not installed. Turning off this compression method.');
             $this->moduleBrotliInstalled = false;
         } else {
