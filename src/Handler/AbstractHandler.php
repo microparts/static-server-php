@@ -69,7 +69,7 @@ abstract class AbstractHandler implements HandlerInterface, ConfigurationAwareIn
     }
 
     /**
-     * @param array $paths
+     * @param array<string> $paths
      */
     protected function makePathForFiles(array $paths): void
     {

@@ -1,5 +1,5 @@
 parameters:
   excludes_analyse:
     - src/Handler/templates/*
-  ignoreErrors:
-    - '#Call to an undefined method RecursiveDirectoryIterator\|RecursiveIteratorIterator\:\:getSubPathname\(\)#'
+#  ignoreErrors:
+#    - '#Call to an undefined method RecursiveDirectoryIterator\|RecursiveIteratorIterator\:\:getSubPathname\(\)#'

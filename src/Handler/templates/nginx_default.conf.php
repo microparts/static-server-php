@@ -131,7 +131,7 @@ http {
     open_file_cache_errors on;
 
     # to boost I/O on HDD we can disable access logs
-    access_log on;
+    access_log off;
 
     # copies data between one FD and other from within the kernel
     # faster than read() + write()
@@ -254,19 +254,19 @@ http {
             }
 
             location @prerender {
-                <?php if ($prerenderEnabled && $prerenderToken):?>
-                  proxy_set_header X-Prerender-Token "<?=$prerenderToken?>";
-                <?php endif;?>
+                <?php foreach($prerenderHeaders as $name => $value):?>
+                  add_header "<?=$name?>" "<?=addslashes($value)?>";
+                <?php endforeach;?>
 
                 proxy_read_timeout 120s;
                 proxy_intercept_errors on;
                 proxy_buffering        on;
                 proxy_cache            STATIC;
-                proxy_cache_valid      200  12h;
+                proxy_cache_valid      200 404 24h;
                 proxy_cache_use_stale  error timeout invalid_header updating http_500 http_502 http_503 http_504;
 
                 set $prerender 0;
-                if ($http_user_agent ~* "googlebot|bingbot|yandex|baiduspider|twitterbot|facebookexternalhit|rogerbot|linkedinbot|embedly|quora link preview|showyoubot|outbrain|pinterest\/0\.|pinterestbot|slackbot|vkShare|W3C_Validator|whatsapp|telegram|bot") {
+                if ($http_user_agent ~* "bot|whatsapp|telegram|google|bing|yandex|baiduspider|twitterbot|facebookexternalhit|rogerbot|linkedin|embedly|quora link preview|showyoubot|outbrain|pinterest\/0\.|pinterestbot|slackbot|vkShare|W3C_Validator") {
                     set $prerender 1;
                 }
 
@@ -274,18 +274,19 @@ http {
                     set $prerender 1;
                 }
 
-                if ($http_user_agent ~ "Prerender") {
+                if ($http_user_agent ~* "prerender") {
                     set $prerender 0;
                 }
 
-                # resolve using Google's DNS/Cloudflare server to force DNS resolution and prevent caching of IPs
-                resolver 8.8.8.8 8.8.4.4 1.1.1.1 1.0.0.1;
+                <?php if ($prerenderResolver):?>
+                    # resolve using Google's DNS/Cloudflare server to force DNS resolution and prevent caching of IPs
+                    resolver <?=$prerenderResolver?>;
+                <?php endif;?>
 
                 if ($prerender = 1) {
                     #setting prerender as a variable forces DNS resolution since nginx caches IPs and doesnt play well with load balancing
-                    set $prerender "<?=$prerenderUrl?>";
-                    rewrite .* /<?=$prerenderHost?>$request_uri? break;
-                    proxy_pass https://$prerender;
+                    rewrite .* /<?=$prerenderHost?>$request_uri?$query_string break;
+                    proxy_pass "<?=$prerenderUrl?>";
                 }
 
                 if ($prerender = 0) {

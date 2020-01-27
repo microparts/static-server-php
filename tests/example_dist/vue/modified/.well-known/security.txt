@@ -1,0 +1,2 @@
+Contact: security@spacetab.io
+Preferred-Languages: en, ru

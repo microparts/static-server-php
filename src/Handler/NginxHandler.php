@@ -79,7 +79,8 @@ class NginxHandler extends AbstractHandler
             'serverHost' => $this->configuration->get('server.host'),
             'prerenderEnabled' => $this->configuration->get('server.prerender.enabled'),
             'prerenderUrl' => $this->getHostWithoutTrailingSlash('server.prerender.url'),
-            'prerenderToken' => $this->configuration->get('server.prerender.token'),
+            'prerenderHeaders' => $this->configuration->get('server.prerender.headers', []),
+            'prerenderResolver' => $this->configuration->get('server.prerender.resolver', false),
             'prerenderHost' => $this->getHostWithoutTrailingSlash('server.prerender.host'),
             'headers' => $header->convert($this->configuration),
             'connProcMethod' => $this->getConnectionProcessingMethod(),
@@ -172,16 +173,16 @@ class NginxHandler extends AbstractHandler
             return;
         }
 
-        $scheme = parse_url($this->configuration->get('server.prerender.url', ''), PHP_URL_SCHEME);
-
-        if ($scheme) {
-            throw new InvalidArgumentException("Prerender url has a scheme: [$scheme], please remove it.");
-        }
-
         $url = $this->configuration->get('server.prerender.url', false);
 
         if (!$url) {
             throw new InvalidArgumentException('Prerender URL not set. Check server.prerender.url config key.');
+        }
+
+        $url = (string) parse_url($url, PHP_URL_HOST);
+
+        if (strlen($url) < 1) {
+            throw new InvalidArgumentException('Prerender URL is invalid. Check server.prerender.url config key.');
         }
 
         $this->logger->info('Ping prerender url...');

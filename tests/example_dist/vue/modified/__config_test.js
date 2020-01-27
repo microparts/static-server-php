@@ -1,0 +1,1 @@
+window.__stage='tests';window.__config=JSON.parse('[]');window.__vcs='test';console.log('%cSTAGE=tests SHA1=test; %cSecurity bugs: security@spacetab.io, Job/partnership: work@spacetab.io','color:#F44336','color:#009688');

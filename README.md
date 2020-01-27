@@ -4,7 +4,7 @@ Static server
 [![CircleCI](https://circleci.com/gh/microparts/static-server-php/tree/master.svg?style=svg)](https://circleci.com/gh/microparts/static-server-php/tree/master)
 [![codecov](https://codecov.io/gh/microparts/static-server-php/branch/master/graph/badge.svg)](https://codecov.io/gh/microparts/static-server-php)
 
- Special static server with support corporate standard of configuration and more.
+Specific static server with support corporate standard of configuration and more..
 This server is a simple wrapper for nginx or an any web server.
 
 Server created for javascript SPA apps like: Vue, React, Angular, etc.
@@ -15,7 +15,7 @@ Server created for javascript SPA apps like: Vue, React, Angular, etc.
 * Secure headers by default.
 * If backend app will be hacked, the hacker may write a letter to us, because email address injected to head section of index (console message) :)
 * Corporate config standard supported by default and injected too.
-* Brotli-compression. Compression based on `Accept-Encoding` header. [More](#Compression).
+* Brotli-compression (Gzip used as fallback for outdated browsers). Enabled by default. [More](#Compression).
 * Deny all `robots.txt` by default.
 * Hot reload
 
@@ -107,6 +107,8 @@ server:
   prerender:
     enabled: false
     url: null
+    resolver: "8.8.8.8 8.8.4.4 1.1.1.1 1.0.0.1"
+    headers: []
   service_worker:
     enabled: false
   log_info: '%%cSTAGE=%s SHA1=%s; %%cSecurity bugs: security@spacetab.io, Job/partnership: work@spacetab.io'
