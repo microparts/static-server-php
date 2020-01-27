@@ -22,7 +22,7 @@ Server created for javascript SPA apps like: Vue, React, Angular, etc.
 ## Docker usage
 
 ```Dockerfile
-FROM microparts/static-server-php:2.0.0
+FROM microparts/static-server-php:2.0.1
 
 ARG VCS_SHA1
 ARG STAGE
@@ -45,7 +45,7 @@ server run
 
 Result:
 ```bash
-[2019-12-18 17:38:30] Server.INFO: State: STAGE=local SHA1= VERSION=2.0.0 CONFIG_PATH=/Users/roquie/google_drive/projects/microparts/static-server-php/configuration
+[2019-12-18 17:38:30] Server.INFO: State: STAGE=local SHA1= VERSION=2.0.1 CONFIG_PATH=/Users/roquie/google_drive/projects/microparts/static-server-php/configuration
 [2019-12-18 17:38:30] Server.INFO: Files modification enabled. Have fun!.
 [2019-12-18 17:38:30] Server.INFO: Nginx Brotli module not installed. Turning off this compression method.
 [2019-12-18 17:38:30] Server.INFO: Check if platform supports async io...
@@ -68,7 +68,7 @@ server reload
 Reload command result:
 ```bash
 [2019-12-18 17:41:44] Server.INFO: Reload configuration
-[2019-12-18 17:41:44] Server.INFO: State: STAGE=local SHA1= VERSION=2.0.0 CONFIG_PATH=/Users/roquie/google_drive/projects/microparts/static-server-php/configuration
+[2019-12-18 17:41:44] Server.INFO: State: STAGE=local SHA1= VERSION=2.0.1 CONFIG_PATH=/Users/roquie/google_drive/projects/microparts/static-server-php/configuration
 [2019-12-18 17:41:44] Server.INFO: Files modification enabled. Have fun!.
 [2019-12-18 17:41:44] Server.INFO: Nginx Brotli module not installed. Turning off this compression method.
 [2019-12-18 17:41:44] Server.INFO: Check if platform supports async io...
