@@ -287,6 +287,7 @@ http {
                     #setting prerender as a variable forces DNS resolution since nginx caches IPs and doesnt play well with load balancing
                     rewrite .* /<?=$prerenderHost?>$request_uri?$query_string break;
                     proxy_pass "<?=$prerenderUrl?>";
+                    break;
                 }
 
                 if ($prerender = 0) {

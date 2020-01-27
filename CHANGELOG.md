@@ -1,3 +1,17 @@
+## [2.0.3] - 2020-01-27
+
+### Added
+
+- Added new before start check, when prerender host (option `server.prerender.host`) is fill and has a valid url address.
+
+### Changed
+
+None.
+
+### Removed
+
+None.
+
 ## [2.0.2] - 2020-01-27
 
 ### Added

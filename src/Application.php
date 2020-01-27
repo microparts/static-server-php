@@ -22,7 +22,7 @@ use Throwable;
 
 final class Application
 {
-    public const VERSION = '2.0.2';
+    public const VERSION = '2.0.3';
     private const SERVER_LOG_CHANNEL = 'Server';
 
     private Configuration $conf;

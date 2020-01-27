@@ -61,6 +61,7 @@ class NginxHandler extends AbstractHandler
         $this->checkIfBrotliModuleInstalled();
         $this->checkIfPlatformSupportsAsyncIo();
         $this->checkIfPrerenderUrlIsAvailable();
+        $this->checkIfPrerenderHostIsNotEmpty();
     }
 
     /**
@@ -196,6 +197,27 @@ class NginxHandler extends AbstractHandler
         }
 
         $this->logger->warning('Prerender url could not be reached: ' . $url);
+    }
+
+    private function checkIfPrerenderHostIsNotEmpty(): void
+    {
+        if (!$this->configuration->get('server.prerender.enabled', false)) {
+            return;
+        }
+
+        $this->logger->info('Checks prerender host is fill and has a valid url address...');
+
+        $host = $this->configuration->get('server.prerender.host', '');
+
+        if (strlen($host) < 1) {
+            throw new InvalidArgumentException('Prerender host is empty. Check server.prerender.host config key.');
+        }
+
+        $valid = (bool) parse_url($host);
+
+        if (!$valid) {
+            throw new InvalidArgumentException('Prerender host is invalid (can\'t parse a url). Check server.prerender.host config key.');
+        }
     }
 
     /**
