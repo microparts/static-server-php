@@ -47,7 +47,10 @@ class DefaultPreferencesConfigurator implements ModifyConfiguratorInterface, Con
         $this->logger->info('Files modification enabled. Have fun!.');
 
         $mod = new Modify();
-        $location = $this->getConfigName('/__config.js');
+
+        $location = $this->configuration->get('server.modify.sha1_in_config', false)
+            ? $this->getConfigName('/__config.js')
+            : '/__config.js';
 
         $mod->addTemplate(__DIR__ . '/../stub/__config.js', $location);
         $mod->addTemplate(__DIR__ . '/../stub/security.txt', '/.well-known/security.txt');

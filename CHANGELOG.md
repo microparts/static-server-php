@@ -1,3 +1,17 @@
+## [2.0.2] - 2020-01-27
+
+### Added
+
+- Option `server.modify.sha1_in_config`. Enable of disable `__config` name with passed VCS SHA1 from CI.
+
+### Changed
+
+None.
+
+### Removed
+
+None.
+
 ## [2.0.1] - 2020-01-27
 
 Prerender option now more configurable and supports many of sets
