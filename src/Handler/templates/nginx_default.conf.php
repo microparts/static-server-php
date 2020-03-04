@@ -232,6 +232,18 @@ http {
         rewrite ^(.+)/+$ $1 permanent;
         rewrite ^(.+)/index.html$ $1 permanent;
 
+        location ~ index\.html {
+          expires 30m;
+          add_header "Cache-Control" "public, max-age=1800";
+          try_files $uri =404;
+        }
+
+        location ~ __config\.js {
+          expires 30m;
+          add_header "Cache-Control" "public, max-age=1800";
+          try_files $uri =404;
+        }
+
         location ~* \.(webm|png|jpg|jpeg|gif|pdf|doc|docx|ico|zip|mp3|rar|exe|wmv|avi|ppt|pptx|mpg|mpeg|tif|wav|mov|psd|ai|xls|xlsx|mp4|m4a|swf|dat|dmg|iso|flv|m4v|torrent|ttf|woff|woff2|otf|svg|eot)$ {
             expires 1y;
             add_header "Cache-Control" "public, max-age=31536000";
@@ -243,10 +255,6 @@ http {
             add_header "Cache-Control" "public, must-revalidate, max-age=86400";
             try_files $uri =404;
         }
-
-        <?php foreach($headers as $name => $value):?>
-            add_header "<?=$name?>" "<?=addslashes($value)?>";
-        <?php endforeach;?>
 
         <?php if ($prerenderEnabled):?>
             location / {
@@ -291,11 +299,24 @@ http {
                 }
 
                 if ($prerender = 0) {
+                    <?php foreach($headers as $name => $value):?>
+                    add_header "<?=$name?>" "<?=addslashes($value)?>";
+                    <?php endforeach;?>
+                    expires 30m;
+                    add_header "Cache-Control" "public, max-age=1800";
+
                     rewrite ^(.+)$ /index.html?$query_string break;
                 }
             }
         <?php else:?>
             location / {
+                <?php foreach($headers as $name => $value):?>
+                  add_header "<?=$name?>" "<?=addslashes($value)?>";
+                <?php endforeach;?>
+
+                expires 30m;
+                add_header "Cache-Control" "public, max-age=1800";
+
                 try_files $uri @rewrites;
             }
 
