@@ -125,8 +125,8 @@ http {
 
     # cache informations about FDs, frequently accessed files
     # can boost performance, but you need to test those values
-    open_file_cache max=200000 inactive=20s;
-    open_file_cache_valid 30s;
+    open_file_cache max=200000 inactive=2m;
+    open_file_cache_valid 10m;
     open_file_cache_min_uses 2;
     open_file_cache_errors on;
 
@@ -170,8 +170,8 @@ http {
 
     # reduce the data that needs to be sent over network -- for testing environment
     gzip on;
-    gzip_min_length 10240;
-    gzip_comp_level 1;
+    gzip_min_length 1024;
+    gzip_comp_level 5;
     gzip_vary on;
     gzip_disable msie6;
     gzip_proxied expired no-cache no-store private auth;
@@ -208,7 +208,7 @@ http {
     # number of requests client can make over keep-alive -- for testing environment
     keepalive_requests 100000;
 
-    proxy_cache_path  /tmp  levels=1:2    keys_zone=STATIC:10m inactive=24h  max_size=128m;
+    proxy_cache_path  /tmp  levels=1:2    keys_zone=STATIC:5m inactive=24h  max_size=128m;
 
     server {
         listen <?=$serverPort?>;
@@ -223,8 +223,9 @@ http {
         }
 
         <?php if ($platformSupportsAsyncIo):?>
-          aio on;
-          output_buffers 1 64k;
+          aio on; # включаем AIO
+          directio 512; # включаем O_DIRECT для файлов, размером 512 байт или больше
+          output_buffers 128 256k; # зная размер и примерное количество одновременно отдаваемых файлов, можно подобрать более подходящие значения
         <?php endif;?>
 
         port_in_redirect off;
@@ -233,8 +234,8 @@ http {
         rewrite ^(.+)/index.html$ $1 permanent;
 
         location ~ index\.html {
-          expires 30m;
-          add_header "Cache-Control" "public, max-age=1800";
+          expires 3m;
+          add_header "Cache-Control" "public, max-age=180";
           try_files $uri =404;
         }
 
@@ -267,11 +268,13 @@ http {
                 <?php endforeach;?>
 
                 proxy_read_timeout 120s;
-                proxy_intercept_errors on;
-                proxy_buffering        on;
-                proxy_cache            STATIC;
-                proxy_cache_valid      200 404 24h;
-                proxy_cache_use_stale  error timeout invalid_header updating http_500 http_502 http_503 http_504;
+                proxy_intercept_errors  on;
+                proxy_buffering         on;
+                proxy_buffers           64 32k;
+                proxy_busy_buffers_size 32k;
+                proxy_cache             STATIC;
+                proxy_cache_valid       200 404 24h;
+                proxy_cache_use_stale   error timeout invalid_header updating http_500 http_502 http_503 http_504;
 
                 set $prerender 0;
                 if ($http_user_agent ~* "bot|whatsapp|telegram|google|bing|yandex|baiduspider|twitterbot|facebookexternalhit|rogerbot|linkedin|embedly|quora link preview|showyoubot|outbrain|pinterest\/0\.|pinterestbot|slackbot|vkShare|W3C_Validator") {
