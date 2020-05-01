@@ -223,9 +223,9 @@ http {
         }
 
         <?php if ($platformSupportsAsyncIo):?>
-          aio on; # включаем AIO
-          directio 512; # включаем O_DIRECT для файлов, размером 512 байт или больше
-          output_buffers 128 256k; # зная размер и примерное количество одновременно отдаваемых файлов, можно подобрать более подходящие значения
+          aio on;
+          directio 512;
+          output_buffers 128 256k;
         <?php endif;?>
 
         port_in_redirect off;
