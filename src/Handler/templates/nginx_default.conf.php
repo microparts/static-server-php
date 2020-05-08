@@ -294,9 +294,14 @@ http {
                     resolver <?=$prerenderResolver?>;
                 <?php endif;?>
 
+                set $request_url $request_uri;                                  
+                if ($request_url = /) {                                         
+                    set $request_url "/index";                                  
+                }
+
                 if ($prerender = 1) {
                     #setting prerender as a variable forces DNS resolution since nginx caches IPs and doesnt play well with load balancing
-                    rewrite .* /<?=$prerenderHost?>$request_uri?$query_string break;
+                    rewrite .* /prerender$request_url.html?$query_string break; 
                     proxy_pass "<?=$prerenderUrl?>";
                     break;
                 }
