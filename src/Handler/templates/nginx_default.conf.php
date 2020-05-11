@@ -295,7 +295,7 @@ http {
                 <?php endif;?>
 
                 # need to redefine $request_uri if it will be "/" but $request_uri is blocked for changes
-                set $req_uri $request_uri;
+                set $req_uri $uri;
                 if ($req_uri = /) {                                         
                     set $req_uri "/index";                                  
                 }
