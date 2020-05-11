@@ -18,6 +18,7 @@ defaults:
         config: /tmp/generated_nginx.conf
     prerender:
       enabled: false
+      cache_ttl: 24h # by default cache lives 24 hours
       cdn_url: null
       cdn_folder: null
       headers: []
