@@ -273,7 +273,7 @@ http {
                 proxy_buffers           64 32k;
                 proxy_busy_buffers_size 32k;
                 proxy_cache             STATIC;
-                proxy_cache_valid       200 24h;
+                proxy_cache_valid       200 <?=$prerenderCacheTTL?>;
                 proxy_cache_use_stale   error timeout invalid_header updating http_500 http_502 http_503 http_504;
 
                 set $prerender 0;
@@ -302,7 +302,7 @@ http {
 
                 if ($prerender = 1) {
                     #setting prerender as a variable forces DNS resolution since nginx caches IPs and doesnt play well with load balancing
-                    rewrite .* /<?=$CDNFolder?>$req_uri.html?$query_string break; 
+                    rewrite .* <?=$CDNFolder?>$req_uri.html?$query_string break; 
                     proxy_pass "<?=$CDNUrl?>";
                     break;
                 }
