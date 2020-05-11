@@ -79,6 +79,7 @@ class NginxHandler extends AbstractHandler
             'serverPort' => $this->configuration->get('server.port'),
             'serverHost' => $this->configuration->get('server.host'),
             'prerenderEnabled' => $this->configuration->get('server.prerender.enabled'),
+            'prerenderCacheTTL' => $this->configuration->get('server.prerender.cache_ttl'),
             'CDNUrl' => $this->getHostWithoutTrailingSlash('server.prerender.cdn_url'),
             'CDNFolder' => $this->getHostWithoutTrailingSlash('server.prerender.cdn_folder'),
             'prerenderHeaders' => $this->configuration->get('server.prerender.headers', []),
@@ -174,29 +175,29 @@ class NginxHandler extends AbstractHandler
             return;
         }
 
-        $url = $this->configuration->get('server.prerender.url', false);
+        $url = $this->configuration->get('server.prerender.cdn_url', false);
 
         if (!$url) {
-            throw new InvalidArgumentException('Prerender URL not set. Check server.prerender.url config key.');
+            throw new InvalidArgumentException('Prerender CDN URL not set. Check server.prerender.cdn_url config key.');
         }
 
         $url = (string) parse_url($url, PHP_URL_HOST);
 
         if (strlen($url) < 1) {
-            throw new InvalidArgumentException('Prerender URL is invalid. Check server.prerender.url config key.');
+            throw new InvalidArgumentException('Prerender CDN URL is invalid. Check server.prerender.cdn_url config key.');
         }
 
-        $this->logger->info('Ping prerender url...');
+        $this->logger->info('Ping prerender cdn url...');
 
         $ping = new Ping($url);
         $latency = $ping->ping('fsockopen');
 
         if ($latency !== false) {
-            $this->logger->info('Prerender url is available.');
+            $this->logger->info('Prerender cdn url is available.');
             return;
         }
 
-        $this->logger->warning('Prerender url could not be reached: ' . $url);
+        $this->logger->warning('Prerender cdn url could not be reached: ' . $url);
     }
 
     private function checkIfPrerenderHostIsNotEmpty(): void
