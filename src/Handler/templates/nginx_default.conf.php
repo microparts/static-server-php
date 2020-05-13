@@ -294,15 +294,14 @@ http {
                     resolver <?=$prerenderResolver?>;
                 <?php endif;?>
 
-                # need to redefine $request_uri if it will be "/" but $request_uri is blocked for changes
-                set $req_uri $uri;
-                if ($req_uri = /) {                                         
-                    set $req_uri "/index";                                  
-                }
-
                 if ($prerender = 1) {
+                    # need to redefine $request_uri if it will be "/" but $request_uri is blocked for changes
+                    set $req_uri $uri;
+                    if ($req_uri = /) {
+                    set $req_uri "/index";
+                    }
                     #setting prerender as a variable forces DNS resolution since nginx caches IPs and doesnt play well with load balancing
-                    rewrite .* <?=$CDNFolder?>$req_uri.html?$query_string break; 
+                    rewrite .* <?=$CDNPath?>$req_uri.html?$query_string break;
                     proxy_pass "<?=$CDNUrl?>";
                     break;
                 }
