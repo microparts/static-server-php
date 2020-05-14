@@ -273,7 +273,7 @@ http {
                 proxy_buffers           64 32k;
                 proxy_busy_buffers_size 32k;
                 proxy_cache             STATIC;
-                proxy_cache_valid       200 404 24h;
+                proxy_cache_valid       200 <?=$prerenderCacheTTL?>;
                 proxy_cache_use_stale   error timeout invalid_header updating http_500 http_502 http_503 http_504;
 
                 set $prerender 0;
@@ -295,9 +295,14 @@ http {
                 <?php endif;?>
 
                 if ($prerender = 1) {
+                    # need to redefine $request_uri if it will be "/" but $request_uri is blocked for changes
+                    set $req_uri $uri;
+                    if ($req_uri = /) {
+                    set $req_uri "/index";
+                    }
                     #setting prerender as a variable forces DNS resolution since nginx caches IPs and doesnt play well with load balancing
-                    rewrite .* /<?=$prerenderHost?>$request_uri?$query_string break;
-                    proxy_pass "<?=$prerenderUrl?>";
+                    rewrite .* <?=$CDNPath?>$req_uri.html?$query_string break;
+                    proxy_pass "<?=$CDNUrl?>";
                     break;
                 }
 

@@ -73,22 +73,26 @@ class NginxHandler extends AbstractHandler
         $this->makePathForFiles([$this->pidFile, $this->configFile]);
         $this->touchFile($this->pidFile);
 
-        $data = $this->templates->render('nginx_default.conf', [
-            'serverRoot' => realpath($this->getServerRoot()),
-            'serverIndex' => $this->configuration->get('server.index'),
-            'serverPort' => $this->configuration->get('server.port'),
-            'serverHost' => $this->configuration->get('server.host'),
-            'prerenderEnabled' => $this->configuration->get('server.prerender.enabled'),
-            'prerenderUrl' => $this->getHostWithoutTrailingSlash('server.prerender.url'),
-            'prerenderHeaders' => $this->configuration->get('server.prerender.headers', []),
-            'prerenderResolver' => $this->configuration->get('server.prerender.resolver', false),
-            'prerenderHost' => $this->getHostWithoutTrailingSlash('server.prerender.host'),
-            'headers' => $header->convert($this->configuration),
-            'connProcMethod' => $this->getConnectionProcessingMethod(),
-            'pidLocation' => $this->pidFile,
-            'moduleBrotliInstalled' => $this->moduleBrotliInstalled,
-            'platformSupportsAsyncIo' => $this->platformSupportsAsyncIo,
-        ]);
+        $data = $this->templates->render(
+            'nginx_default.conf',
+            [
+                'serverRoot'              => realpath($this->getServerRoot()),
+                'serverIndex'             => $this->configuration->get('server.index'),
+                'serverPort'              => $this->configuration->get('server.port'),
+                'serverHost'              => $this->configuration->get('server.host'),
+                'prerenderEnabled'        => $this->configuration->get('server.prerender.enabled'),
+                'prerenderCacheTTL'       => $this->configuration->get('server.prerender.cache_ttl'),
+                'CDNUrl'                  => $this->getHostWithoutTrailingSlash('server.prerender.cdn_url'),
+                'CDNPath'                 => $this->configuration->get('server.prerender.cdn_path'),
+                'prerenderHeaders'        => $this->configuration->get('server.prerender.headers', []),
+                'prerenderResolver'       => $this->configuration->get('server.prerender.resolver', false),
+                'headers'                 => $header->convert($this->configuration),
+                'connProcMethod'          => $this->getConnectionProcessingMethod(),
+                'pidLocation'             => $this->pidFile,
+                'moduleBrotliInstalled'   => $this->moduleBrotliInstalled,
+                'platformSupportsAsyncIo' => $this->platformSupportsAsyncIo,
+            ]
+        );
 
         file_put_contents($this->configFile, $data);
     }
@@ -103,18 +107,23 @@ class NginxHandler extends AbstractHandler
      */
     public function start(): void
     {
-        $this->runProcess(['nginx', '-c', $this->configFile], function () {
-            $this->logger->info(sprintf(
-                'Server started at: %s:%d',
-                $this->configuration->get('server.host'),
-                $this->configuration->get('server.port')
-            ));
-        });
+        $this->runProcess(
+            ['nginx', '-c', $this->configFile],
+            function () {
+                $this->logger->info(
+                    sprintf(
+                        'Server started at: %s:%d',
+                        $this->configuration->get('server.host'),
+                        $this->configuration->get('server.port')
+                    )
+                );
+            }
+        );
     }
 
     public function reload(): void
     {
-        if (!file_exists($this->pidFile)) {
+        if ( ! file_exists($this->pidFile)) {
             throw new LogicException('Can\'t reload server. Pid file not found.');
         }
 
@@ -136,6 +145,7 @@ class NginxHandler extends AbstractHandler
 
     /**
      * @param string $key
+     *
      * @return bool|string
      */
     private function getHostWithoutTrailingSlash(string $key)
@@ -155,10 +165,10 @@ class NginxHandler extends AbstractHandler
     {
         switch (PHP_OS_FAMILY) {
             case 'Linux':
-                return  'epoll';
+                return 'epoll';
             case 'Darwin':
             case 'BSD':
-                return  'kqueue';
+                return 'kqueue';
             default:
                 return 'poll';
         }
@@ -169,39 +179,43 @@ class NginxHandler extends AbstractHandler
      */
     private function checkIfPrerenderUrlIsAvailable(): void
     {
-        if (!$this->configuration->get('server.prerender.enabled', false)) {
+        if ( ! $this->configuration->get('server.prerender.enabled', false)) {
             $this->logger->info('Prerender is not enabled, skip check.');
+
             return;
         }
 
-        $url = $this->configuration->get('server.prerender.url', false);
+        $url = $this->configuration->get('server.prerender.cdn_url', false);
 
-        if (!$url) {
-            throw new InvalidArgumentException('Prerender URL not set. Check server.prerender.url config key.');
+        if ( ! $url) {
+            throw new InvalidArgumentException('Prerender CDN URL not set. Check server.prerender.cdn_url config key.');
         }
 
         $url = (string) parse_url($url, PHP_URL_HOST);
 
         if (strlen($url) < 1) {
-            throw new InvalidArgumentException('Prerender URL is invalid. Check server.prerender.url config key.');
+            throw new InvalidArgumentException(
+                'Prerender CDN URL is invalid. Check server.prerender.cdn_url config key.'
+            );
         }
 
-        $this->logger->info('Ping prerender url...');
+        $this->logger->info('Ping prerender cdn url...');
 
-        $ping = new Ping($url);
+        $ping    = new Ping($url);
         $latency = $ping->ping('fsockopen');
 
         if ($latency !== false) {
-            $this->logger->info('Prerender url is available.');
+            $this->logger->info('Prerender cdn url is available.');
+
             return;
         }
 
-        $this->logger->warning('Prerender url could not be reached: ' . $url);
+        $this->logger->warning('Prerender cdn url could not be reached: ' . $url);
     }
 
     private function checkIfPrerenderHostIsNotEmpty(): void
     {
-        if (!$this->configuration->get('server.prerender.enabled', false)) {
+        if ( ! $this->configuration->get('server.prerender.enabled', false)) {
             return;
         }
 
@@ -215,8 +229,10 @@ class NginxHandler extends AbstractHandler
 
         $valid = (bool) parse_url($host);
 
-        if (!$valid) {
-            throw new InvalidArgumentException('Prerender host is invalid (can\'t parse a url). Check server.prerender.host config key.');
+        if ( ! $valid) {
+            throw new InvalidArgumentException(
+                'Prerender host is invalid (can\'t parse a url). Check server.prerender.host config key.'
+            );
         }
     }
 

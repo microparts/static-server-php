@@ -18,7 +18,11 @@ defaults:
         config: /tmp/generated_nginx.conf
     prerender:
       enabled: false
-      url: null
+      cache_ttl: 24h # by default cache lives 24 hours
+      cdn_url: null
+      cdn_folder: / # CDN folder relative to root path (/)
+      headers: []
+      resolver: false
     log_info: "%%cSTAGE=%s SHA1=%s; %%cSecurity bugs: security@spacetab.io, Job/partnership: work@spacetab.io"
     logger:
       enabled: true
