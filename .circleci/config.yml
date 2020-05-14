@@ -1,23 +1,48 @@
 version: 2
 jobs:
-  test:
-    machine: true
+  test_deps:
+    docker:
+      # specify the version you desire here
+      - image: roquie/composer-parallel
+
+    working_directory: ~/repo
+
     steps:
       - checkout
-      - run:
-          name: Create testing environment & Run tests
-          command: docker build -f Dockerfile.test -t unit:latest .
-#      - run:
-#          name: Static analyse
-#          command: |
-#            vendor/bin/phpstan analyse -l 7 src
-      - run:
-          name: Send code coverage report to Codecov
-          command: |
-            docker run --rm -it -v $(pwd)/coverage:/tmp unit:latest
-            bash <(curl -s https://codecov.io/bash)
 
-  deploy:
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "composer.json" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-dependencies-
+
+      - run: composer install -n --prefer-dist --ignore-platform-reqs
+
+      - save_cache:
+          paths:
+            - ./vendor
+          key: v1-dependencies-{{ checksum "composer.json" }}
+  test_run:
+    docker:
+      # specify the version you desire here
+      - image: spacetabio/amphp-alpine:7.4-wkhtmltopdf-xdebug-1.1.0
+
+    working_directory: ~/repo
+
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "composer.json" }}
+            - v1-dependencies-
+
+      - run: vendor/bin/phpstan analyse src --level 6
+      - run: vendor/bin/phpunit --coverage-clover=coverage.xml
+      - run: apk add bash
+      - run: bash -c "bash <(curl -s https://codecov.io/bash)"
+
+  deploy_latest:
     machine: true
     steps:
       - checkout
@@ -27,32 +52,21 @@ jobs:
       - run:
           name: Login to Docker Hub and push image
           command: |
-            export TAG=$(git describe --tags $(git rev-list --tags --max-count=1))
-
             echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
             docker push microparts/static-server-php:latest
-            docker tag microparts/static-server-php:latest microparts/static-server-php:$TAG
-            docker push microparts/static-server-php:$TAG
 
 workflows:
   version: 2
-  test:
+  test_app:
     jobs:
-      - test
-  deploy:
+      - test_deps
+      - test_run:
+          requires:
+            - test_deps
+  deploy_latest:
     jobs:
       - deploy:
           filters:
             branches:
               only:
                 - master
-  cron:
-    triggers:
-      - schedule:
-          cron: "0 0 * * 1" # Every week on Monday
-          filters:
-            branches:
-              only:
-                - master
-    jobs:
-      - deploy
