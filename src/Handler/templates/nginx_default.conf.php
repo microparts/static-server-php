@@ -240,8 +240,8 @@ http {
         }
 
         location ~ __config\.js {
-          expires 30m;
-          add_header "Cache-Control" "public, max-age=1800";
+          expires 3m;
+          add_header "Cache-Control" "public, max-age=180";
           try_files $uri =404;
         }
 
@@ -252,8 +252,8 @@ http {
         }
 
         location ~* \.(js|css|json|map|xml)$ {
-            expires 1d;
-            add_header "Cache-Control" "public, must-revalidate, max-age=86400";
+            expires 2h;
+            add_header "Cache-Control" "public, must-revalidate, max-age=7200";
             try_files $uri =404;
         }
 
@@ -298,7 +298,7 @@ http {
                     # need to redefine $request_uri if it will be "/" but $request_uri is blocked for changes
                     set $req_uri $uri;
                     if ($req_uri = /) {
-                    set $req_uri "/index";
+                      set $req_uri "/index";
                     }
                     #setting prerender as a variable forces DNS resolution since nginx caches IPs and doesnt play well with load balancing
                     rewrite .* <?=$CDNPath?>$req_uri.html?$query_string break;
