@@ -65,7 +65,7 @@ workflows:
             - test_deps
   deploy_latest:
     jobs:
-      - deploy:
+      - deploy_latest:
           filters:
             branches:
               only:
